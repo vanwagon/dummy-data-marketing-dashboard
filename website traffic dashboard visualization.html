@@ -1,0 +1,2258 @@
+<html>
+  <head>
+	<meta charset="UTF-8">
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+	/***
+	=== Overview and Instructions ===
+	* Utilizes Google Charts (GC) to draw the visuals https://developers.google.com/chart
+	* With the exception of GC, the page is fully self-contained and uses HTML, CSS, and Javascript
+	* Implementation of Google Charts has been modified to separate the data and allow for code reuse, rather than distinct code for every month and data chart
+	* Data is below under the "Datasets" section, placed into Javascript arrays; follow the structure and any notes for each dataset when you update or add
+	* Months are counted by FY using array rules; e.g., July is "0", Aug. is "1", Sept. is "2", and so on
+	* To set the default month when you open the document change the number in "WD__month" below
+	* When updating for a new month, every dataset must be a reference to that month, even if the values are blank; e.g., if you add Oct., all datasets must have an Oct. reference
+	***/
+
+	/*** Initialize chart draw on load or resize  ***/
+	var WD__month = 5;
+	var WD__yearStart = 2021;
+	var WD__monthMax = WD__month; // Cap out at current month
+
+	window.addEventListener("load", function(){ WD__trafficTotals(); WD__chartsInit(WD__month); });
+	window.addEventListener("resize", function(){ WD__chartsInit(WD__month); });
+
+	/*** Datasets ***/
+	var WD__chartLabels = [
+		//[variable type, value]
+		['string', 'Months'],
+		['number', 'FY21'],
+		['number', 'FY20'],
+		['number', 'FY19'],
+		['number', 'FY18']
+	]
+
+	var WD__dataPageviews =	[
+			// Data order: 'month', FY21, FY20, FY19, FY18];
+			//Data Source: 
+			['Jan', 16766, 11332, 10110, 3574],
+			['Feb', 13331, 11687,	8866, 1907],
+			['Mar', 13939, 10452, 8323, 4326],
+			['Apr', 16674, 21007, 8469, 2604],
+			['May', 16989, 18021, 9169, 4122],
+			['Jun', 15722, 15880, 8018, 4500],
+			['Jul', , 18884, 7444, 3399],
+			['Aug', , 16421, 8385, 5298],
+			['Sep', , 15736, 7584, 4407],
+			['Oct', , 19017, 7570, 4434],
+			['Nov', , 15895, 9453, 5557],
+			['Dec', , 10994, 10024, 4727]
+		];
+
+	var WD__dataUniques = [
+			// Data order: 'month', FY21, FY20, FY19, FY18];
+			
+			['Jan', 9235, 9150, 8580, 2813],
+			['Feb', 113474, 8031, 7206, 1550],
+			['Mar', 11082, 87251, 67024, 37983],
+			['Apr', 99242, 162217, 67325, 22041],
+			['May', 97372, 14267, 73351, 3353],
+			['Jun', 88732, 12966, 63828, 3291],
+			['Jul', , 146769, 5978, 29109],
+			['Aug', , 13159, 6799, 4377],
+			['Sep', , 12961, 6085, 6214],
+			['Oct', , 12915, 6113, 3589],
+			['Nov', , 19278, 75895, 44696],
+			['Dec', , 9163, 8075, 3802]
+		];
+
+	var WD__dataURLsUnique = [
+	
+		[ // Jan
+			["Unique URLs", "Uniques", { role: "style" } ], // Column header
+			["dummy-link", 11315, "blue"],
+			["/dummy-link/", 9699, "blue"],
+			["//dummy-link//", 5774, "blue"],
+			["/dummy-link/", 4920, "blue"],
+			["/dummy-link/", 3951, "blue"],
+			["/dummy-linkn/", 3035, "blue"],
+			["/dummy-link/", 2147, "blue"],
+			["/dummy-link/", 2127, "blue"],
+			["/dummy-link-center//", 2089, "blue"],
+			["/dummy-link/", 1826, "blue"]
+		],
+		[ // Feb
+			["Unique URLs", "Uniques", { role: "style" } ], // Column header
+			["dummy-link", 10501, "blue"],
+			["/dummy-link/", 5771, "blue"],
+			["/dummy-link/", 4350, "blue"],
+			["/dummy-link/", 3361, "blue"],
+			["/dummy-link/", 3256, "blue"],
+			["/dummy-link/", 2771, "blue"],
+			["/dummy-link/", 2434, "blue"],
+			["/dummy-link/", 2350, "blue"],
+			["/dummy-link/", 1865, "blue"],
+			["/dummy-link", 1846, "blue"]
+		],
+		[ // Mar
+			["Unique URLs", "Uniques", { role: "style" } ], // Column header
+			["dummy-link", 10501, "blue"],
+			["/dummy-link/", 5771, "blue"],
+			["/dummy-link/", 4350, "blue"],
+			["/dummy-link/", 3361, "blue"],
+			["/dummy-link/", 3256, "blue"],
+			["/dummy-link/", 2771, "blue"],
+			["/dummy-link/", 2434, "blue"],
+			["/dummy-link/", 2350, "blue"],
+			["/dummy-link/", 1865, "blue"],
+			["/dummy-link", 1846, "blue"]
+		],
+		[ // Apr
+			["Unique URLs", "Uniques", { role: "style" } ], // Column header
+			["dummy-link", 10501, "blue"],
+			["/dummy-link/", 5771, "blue"],
+			["/dummy-link/", 4350, "blue"],
+			["/dummy-link/", 3361, "blue"],
+			["/dummy-link/", 3256, "blue"],
+			["/dummy-link/", 2771, "blue"],
+			["/dummy-link/", 2434, "blue"],
+			["/dummy-link/", 2350, "blue"],
+			["/dummy-link/", 1865, "blue"],
+			["/dummy-link", 1846, "blue"]
+		],
+		[ // May
+			["Unique URLs", "Uniques", { role: "style" } ], // Column header
+			["dummy-link", 10501, "blue"],
+			["/dummy-link/", 5771, "blue"],
+			["/dummy-link/", 4350, "blue"],
+			["/dummy-link/", 3361, "blue"],
+			["/dummy-link/", 3256, "blue"],
+			["/dummy-link/", 2771, "blue"],
+			["/dummy-link/", 2434, "blue"],
+			["/dummy-link/", 2350, "blue"],
+			["/dummy-link/", 1865, "blue"],
+			["/dummy-link", 1846, "blue"]
+		],
+    [ // June
+			["Unique URLs", "Uniques", { role: "style" } ], // Column header
+			["dummy-link", 10501, "blue"],
+			["/dummy-link/", 5771, "blue"],
+			["/dummy-link/", 4350, "blue"],
+			["/dummy-link/", 3361, "blue"],
+			["/dummy-link/", 3256, "blue"],
+			["/dummy-link/", 2771, "blue"],
+			["/dummy-link/", 2434, "blue"],
+			["/dummy-link/", 2350, "blue"],
+			["/dummy-link/", 1865, "blue"],
+			["/dummy-link", 1846, "blue"]
+		]
+	];
+
+	var WD__dataSiteAreas = [
+	// behavior > site content > content drilldown
+		[ // Jan
+			["Site Areas", "Uniques", { role: "style" } ], // Column header
+			["/dummy-link/", 37039, "green"],
+			["/dummy-link/", 15184, "green"],
+			["/dummy-link/", 5818, "green"],
+			["/dummy-link/", 5145, "green"],
+			["/dummy-link/", 3952, "green"],
+			["/dummy-links/", 3216, "green"],
+			["/dummy-link/", 1202, "green"],
+			["/dummy-link/", 1150, "green"],
+			["/dummy-link/", 1140, "green"],
+			["/dummy-link/", 1034, "green"]
+		],
+		[ // Feb
+			["Site Areas", "Uniques", { role: "style" } ], // Column header
+			["/dummy-link/", 37039, "green"],
+			["/dummy-link/", 15184, "green"],
+			["/dummy-link/", 5818, "green"],
+			["/dummy-link/", 5145, "green"],
+			["/dummy-link/", 3952, "green"],
+			["/dummy-links/", 3216, "green"],
+			["/dummy-link/", 1202, "green"],
+			["/dummy-link/", 1150, "green"],
+			["/dummy-link/", 1140, "green"],
+			["/dummy-link/", 1034, "green"]
+		],
+		[ // Mar
+			["Site Areas", "Uniques", { role: "style" } ], // Column header
+			["/dummy-link/", 37039, "green"],
+			["/dummy-link/", 15184, "green"],
+			["/dummy-link/", 5818, "green"],
+			["/dummy-link/", 5145, "green"],
+			["/dummy-link/", 3952, "green"],
+			["/dummy-links/", 3216, "green"],
+			["/dummy-link/", 1202, "green"],
+			["/dummy-link/", 1150, "green"],
+			["/dummy-link/", 1140, "green"],
+			["/dummy-link/", 1034, "green"]
+		],
+		[ // Apr
+			["Site Areas", "Uniques", { role: "style" } ], // Column header
+			["/dummy-link/", 37039, "green"],
+			["/dummy-link/", 15184, "green"],
+			["/dummy-link/", 5818, "green"],
+			["/dummy-link/", 5145, "green"],
+			["/dummy-link/", 3952, "green"],
+			["/dummy-links/", 3216, "green"],
+			["/dummy-link/", 1202, "green"],
+			["/dummy-link/", 1150, "green"],
+			["/dummy-link/", 1140, "green"],
+			["/dummy-link/", 1034, "green"]
+		],
+		[ // May
+			["Site Areas", "Uniques", { role: "style" } ], // Column header
+			["/dummy-link/", 37039, "green"],
+			["/dummy-link/", 15184, "green"],
+			["/dummy-link/", 5818, "green"],
+			["/dummy-link/", 5145, "green"],
+			["/dummy-link/", 3952, "green"],
+			["/dummy-links/", 3216, "green"],
+			["/dummy-link/", 1202, "green"],
+			["/dummy-link/", 1150, "green"],
+			["/dummy-link/", 1140, "green"],
+			["/dummy-link/", 1034, "green"]
+		],
+    [ // June
+			["Site Areas", "Uniques", { role: "style" } ], // Column header
+			["/dummy-link/", 37039, "green"],
+			["/dummy-link/", 15184, "green"],
+			["/dummy-link/", 5818, "green"],
+			["/dummy-link/", 5145, "green"],
+			["/dummy-link/", 3952, "green"],
+			["/dummy-links/", 3216, "green"],
+			["/dummy-link/", 1202, "green"],
+			["/dummy-link/", 1150, "green"],
+			["/dummy-link/", 1140, "green"],
+			["/dummy-link/", 1034, "green"]
+		]
+	];
+
+	var WD__dataServices = [
+	// content drilldown --> Buckets
+		[ // Jan
+			["Services", "Pageviews", { role: "style" } ], // Column header
+			["/dummy-link/", 15184+2, "orange"],
+			["/dummy-link/", 5818+1, "orange"],
+			["/dummy-link/", 3952, "orange"],
+			["/dummy-link/", 1140, "orange"],
+			["/dummy-link/", 831, "orange"],
+			["/dummy-link/", 209+128, "orange"],
+			["/dummy-link/", 0, "orange"]
+		],
+		[ // Feb
+			["Services", "Pageviews", { role: "style" } ], // Column header
+			["/dummy-link/", 15184+2, "orange"],
+			["/dummy-link/", 5818+1, "orange"],
+			["/dummy-link/", 3952, "orange"],
+			["/dummy-link/", 1140, "orange"],
+			["/dummy-link/", 831, "orange"],
+			["/dummy-link/", 209+128, "orange"],
+			["/dummy-link/", 0, "orange"]
+		],
+		[ // Mar
+			["Services", "Pageviews", { role: "style" } ], // Column header
+			["/dummy-link/", 15184+2, "orange"],
+			["/dummy-link/", 5818+1, "orange"],
+			["/dummy-link/", 3952, "orange"],
+			["/dummy-link/", 1140, "orange"],
+			["/dummy-link/", 831, "orange"],
+			["/dummy-link/", 209+128, "orange"],
+			["/dummy-link/", 0, "orange"]
+		],
+		[ // Apr
+			["Services", "Pageviews", { role: "style" } ], // Column header
+			["/dummy-link/", 15184+2, "orange"],
+			["/dummy-link/", 5818+1, "orange"],
+			["/dummy-link/", 3952, "orange"],
+			["/dummy-link/", 1140, "orange"],
+			["/dummy-link/", 831, "orange"],
+			["/dummy-link/", 209+128, "orange"],
+			["/dummy-link/", 0, "orange"]
+		],
+		[ // May
+			["Services", "Pageviews", { role: "style" } ], // Column header
+			["/dummy-link/", 15184+2, "orange"],
+			["/dummy-link/", 5818+1, "orange"],
+			["/dummy-link/", 3952, "orange"],
+			["/dummy-link/", 1140, "orange"],
+			["/dummy-link/", 831, "orange"],
+			["/dummy-link/", 209+128, "orange"],
+			["/dummy-link/", 0, "orange"]
+		],
+    [ // June
+			["Services", "Pageviews", { role: "style" } ], // Column header
+			["/dummy-link/", 15184+2, "orange"],
+			["/dummy-link/", 5818+1, "orange"],
+			["/dummy-link/", 3952, "orange"],
+			["/dummy-link/", 1140, "orange"],
+			["/dummy-link/", 831, "orange"],
+			["/dummy-link/", 209+128, "orange"],
+			["/dummy-link/", 0, "orange"]
+		]
+	];
+
+	var WD__dataSources = [
+		//Source: Under Acquisition > All Traffic > Source/Medium > (NOT UNIQUE)
+		
+		[ // Jan
+			["Sources", "Users", { role: "style" } ], // Column header
+			["google / organic", 3267, "tomato"],
+			["(direct) / (none)", 1188, "tomato"],
+			["google / cpc", 600, "tomato"],
+			["m.facebook.com / referral", 553, "tomato"],
+			["Bing / organic", 311, "tomato"],
+			["youtube.com / referral", 212, "tomato"],
+			["aao.org / referral", 183, "tomato"],
+			["yahoo / organic", 139, "tomato"],
+			["Duck Duck Go / organic", 116, "tomato"],
+			["instagram.com / referral", 50, "tomato"]
+		],
+		[ // Feb
+			["Sources", "Users", { role: "style" } ], // Column header
+			["google / organic", 27879, "tomato"],
+			["m.facebook.com / referral", 23533, "tomato"],
+			["(direct) / (none)", 13054, "tomato"],
+			["google / cpc", 3867, "tomato"],
+			["Bing / organic", 1518, "tomato"],
+			["instagram.com / referral", 1492, "tomato"],
+			["aao.org / referral", 1210, "tomato"],
+			["l.facebook.com / referral", 1172, "tomato"],
+			["youtube.com / referral", 814, "tomato"],
+			["Duck Duck Go / organic", 641, "tomato"]
+		],
+		[ // March
+			["Sources", "Users", { role: "style" } ], // Column header
+			["google / organic", 35125, "tomato"],
+			["m.facebook.com / referral", 17209, "tomato"],
+			["(direct) / (none)", 10437, "tomato"],
+			["google / cpc", 3567, "tomato"],
+			["Bing / organic", 1639, "tomato"],
+			["aao.org / referral", 1221, "tomato"],
+			["l.facebook.com / referral", 959, "tomato"],
+			["youtube.com / referral", 771, "tomato"],
+			["Duck Duck Go / organic", 672, "tomato"],
+			["bronto / email", 635, "tomato"]
+		],
+		[ // April
+			["Sources", "Users", { role: "style" } ], // Column header
+			["google / organic", 27844, "tomato"],
+			["(direct) / (none)", 15012, "tomato"],
+			["m.facebook.com / referral", 9752, "tomato"],
+			["instagram.com / referral", 3401, "tomato"],
+			["l.facebook.com / referral", 2575, "tomato"],
+			["google / cpc", 1757, "tomato"],
+			["Bing / organic", 1499, "tomato"],
+			["bronto / email", 863, "tomato"],
+			["aao.org / referral", 858, "tomato"],
+			["Duck Duck Go / organic", 629, "tomato"]
+		],
+		[ // May
+			["Sources", "Users", { role: "style" } ], // Column header
+			["google / organic", 23984, "tomato"],
+			["(direct) / (none)", 14254, "tomato"],
+			["facebok / cpc", 14254, "tomato"],
+			["m.facebook.com / referral", 4861, "tomato"],
+			["l.facebook.com / referral", 3766, "tomato"],
+			["instagram.com / referral", 3243, "tomato"],
+			["Bing / organic", 1337, "tomato"],
+			["google / cpc", 1326, "tomato"],
+			["bronto / email", 825, "tomato"],
+			["Duck Duck Go / organic", 815, "tomato"]
+		],
+    [ // June
+			["Sources", "Users", { role: "style" } ], // Column header
+			["google / organic", 24260, "tomato"],
+			["facebok / cpc", 15004, "tomato"],
+      ["(direct) / (none)", 6505, "tomato"],
+      ["google / cpc", 1301, "tomato"],
+      ["Bing / organic", 1271, "tomato"],
+			["youtube.com / referral", 585, "tomato"],
+			["Duck Duck Go / organic", 555, "tomato"],
+			["aao.org / referral", 525, "tomato"],
+			["l.facebook.com / referral", 496, "tomato"],
+			["bronto / email", 483, "tomato"]
+		]
+	];
+
+	var WD__dataTerms = [
+		// Google Search Console > Performance
+		[ // Jan
+			["Search Terms", "Clicks", { role: "style" } ], // Column header
+			["dummy", 1679, "slateblue"],
+			["dummy", 426, "slateblue"],
+			["dummy", 421, "slateblue"],
+			["dummy", 332, "slateblue"],
+			["dummy", 231, "slateblue"],
+			["dummy", 195, "slateblue"],
+			["dummy", 2064, "slateblue"],
+			["dummy", 177, "slateblue"],
+			["dummy", 154, "slateblue"],
+			["dummy", 151, "slateblue"],
+		],
+		[ // Feb
+			["Search Terms", "Clicks", { role: "style" } ], // Column header
+			["dummy", 1679, "slateblue"],
+			["dummy", 426, "slateblue"],
+			["dummy", 421, "slateblue"],
+			["dummy", 332, "slateblue"],
+			["dummy", 231, "slateblue"],
+			["dummy", 195, "slateblue"],
+			["dummy", 2064, "slateblue"],
+			["dummy", 177, "slateblue"],
+			["dummy", 154, "slateblue"],
+			["dummy", 151, "slateblue"],
+		],
+		[ // March
+			["Search Terms", "Clicks", { role: "style" } ], // Column header
+			["dummy", 1679, "slateblue"],
+			["dummy", 426, "slateblue"],
+			["dummy", 421, "slateblue"],
+			["dummy", 332, "slateblue"],
+			["dummy", 231, "slateblue"],
+			["dummy", 195, "slateblue"],
+			["dummy", 2064, "slateblue"],
+			["dummy", 177, "slateblue"],
+			["dummy", 154, "slateblue"],
+			["dummy", 151, "slateblue"],
+		],
+		[ // April
+			["Search Terms", "Clicks", { role: "style" } ], // Column header
+			["dummy", 1679, "slateblue"],
+			["dummy", 426, "slateblue"],
+			["dummy", 421, "slateblue"],
+			["dummy", 332, "slateblue"],
+			["dummy", 231, "slateblue"],
+			["dummy", 195, "slateblue"],
+			["dummy", 2064, "slateblue"],
+			["dummy", 177, "slateblue"],
+			["dummy", 154, "slateblue"],
+			["dummy", 151, "slateblue"],
+		],
+		[ // MAY EXCLUDED "COLOR" QUERY TERM
+			["Search Terms", "Clicks", { role: "style" } ], // Column header
+			["dummy", 1679, "slateblue"],
+			["dummy", 426, "slateblue"],
+			["dummy", 421, "slateblue"],
+			["dummy", 332, "slateblue"],
+			["dummy", 231, "slateblue"],
+			["dummy", 195, "slateblue"],
+			["dummy", 2064, "slateblue"],
+			["dummy", 177, "slateblue"],
+			["dummy", 154, "slateblue"],
+			["dummy", 151, "slateblue"],
+		],
+    [ // June
+			["Search Terms", "Clicks", { role: "style" } ], // Column header
+			["dummy", 1679, "slateblue"],
+			["dummy", 426, "slateblue"],
+			["dummy", 421, "slateblue"],
+			["dummy", 332, "slateblue"],
+			["dummy", 231, "slateblue"],
+			["dummy", 195, "slateblue"],
+			["dummy", 2064, "slateblue"],
+			["dummy", 177, "slateblue"],
+			["dummy", 154, "slateblue"],
+			["dummy", 151, "slateblue"]
+		]
+	];
+
+	var WD__dataCountries = [
+		//Source: Audience > Geo > Location > Country > ALL USERS
+		[ // Jan
+			["Countries", "Users", { role: "style" } ], // Column header
+			["United States", 544625, "orange"],
+			["United Kingdom", 43665, "orange"],
+			["India", 3398, "orange"],
+			["Canada", 2764, "orange"],
+			["(not set)", 1318, "orange"],
+			["Australia", 853, "orange"],
+			["Philippines", 572, "orange"],
+			["Germany", 341, "orange"],
+			["Netherlands", 294, "orange"],
+			["Singapore", 271, "orange"],
+		],
+		[ // Feb
+			["Countries", "Users", { role: "style" } ], // Column header
+			["United States", 560111, "orange"],
+			["United Kingdom", 34138, "orange"],
+			["India", 2383, "orange"],
+			["Canada", 2365, "orange"],
+			["Australia", 778, "orange"],
+			["Philippines", 618, "orange"],
+			["Germany", 331, "orange"],
+			["Indonesia", 268, "orange"],
+			["Netherlands", 268, "orange"],
+			["Malaysia", 241, "orange"]
+		],
+		[ // March
+			["Countries", "Users", { role: "style" } ], // Column header
+			["United States", 552705, "orange"],
+			["United Kingdom", 36495, "orange"],
+			["India", 2722, "orange"],
+			["Canada", 2702, "orange"],
+			["Australia", 974, "orange"],
+			["Philippines", 770, "orange"],
+			["Bangladesh", 696, "orange"],
+			["Indonesia", 399, "orange"],
+			["Germany", 364, "orange"],
+			["Singapore", 338, "orange"]
+		],
+		[ // April
+			["Countries", "Users", { role: "style" } ], // Column header
+			["United States", 459691, "orange"],
+			["United Kingdom", 24865, "orange"],
+			["India", 2158, "orange"],
+			["Canada", 2056, "orange"],
+			["Australia", 739, "orange"],
+			["Philippines", 700, "orange"],
+			["Germany", 415, "orange"],
+			["Indonesia", 373, "orange"],
+			["Netherlands", 269, "orange"],
+			["Malaysia", 265, "orange"]
+		],
+		[ // May
+		// 
+			["Countries", "Users", { role: "style" } ], // Column header
+			["United States", 47129, "orange"],
+			["United Kingdom", 2726, "orange"],
+			["India", 2616, "orange"],
+			["Canada", 1677, "orange"],
+			["Australia", 744, "orange"],
+			["Philippines", 582, "orange"],
+			["Germany", 328, "orange"],
+			["Indonesia", 293, "orange"],
+			["Singapore", 278, "orange"],
+			["China", 275, "orange"]
+		],
+    [ // June
+			["Countries", "Users", { role: "style" } ], // Column header
+			["United States", 37365, "orange"],
+      ["India", 2645, "orange"],
+			["United Kingdom", 2384, "orange"],
+			["Canada", 1677, "orange"],
+			["Australia", 771, "orange"],
+			["Philippines", 543, "orange"],
+			["Indonesia", 384, "orange"],
+			["Singapore", 326, "orange"],
+			["China", 315, "orange"],
+			["Malaysia", 288, "orange"]
+		]
+	];
+
+	var WD__dataStates = [
+		//Source:
+		[ // Jan
+			["States", "Users", { role: "style" } ], // Column header
+			["California", 4828, "brown"],
+			["Illinois", 4431, "brown"],
+			["Texas", 3728, "brown"],
+			["Florida", 2807, "brown"],
+			["New York", 2358, "brown"],
+			["Georgia", 1663, "brown"],
+			["Pennsylvania", 1661, "brown"],
+			["North Carolina", 1642, "brown"],
+			["Ohio", 1527, "brown"],
+			["Virginia", 1401, "brown"]
+		],
+		[ // Feb
+			["States", "Users", { role: "style" } ], // Column header
+			["California", 7305, "brown"],
+			["Illinois", 4840, "brown"],
+			["Texas", 4684, "brown"],
+			["New York", 4025, "brown"],
+			["Florida", 3982, "brown"],
+			["Pennsylvania", 2293, "brown"],
+			["Georgia", 2169, "brown"],
+			["Ohio", 2132, "brown"],
+			["North Carolina", 1911, "brown"],
+			["Virginia", 1715, "brown"]
+		],
+		[ // March
+			["States", "Users", { role: "style" } ], // Column header
+			["California", 5851, "brown"],
+			["Illinois", 4821, "brown"],
+			["Texas", 4058, "brown"],
+			["New York", 3266, "brown"],
+			["Florida", 3240, "brown"],
+			["Pennsylvania", 2177, "brown"],
+			["Ohio", 1928, "brown"],
+			["Georgia", 1899, "brown"],
+			["North Carolina", 1843, "brown"],
+			["New Jersey", 1441, "brown"]
+		],
+		[ // April
+			["States", "Users", { role: "style" } ], // Column header
+			["California", 6698, "brown"],
+			["Texas", 4228, "brown"],
+			["Florida", 3738, "brown"],
+			["New York", 3517, "brown"],
+			["Illinois", 3038, "brown"],
+			["Pennsylvania", 1912, "brown"],
+			["Georgia", 1724, "brown"],
+			["North Carolina", 1572, "brown"],
+			["Ohio", 1520, "brown"],
+			["New Jersey", 1462, "brown"]
+		],
+		[ // May
+		// SOURCE
+			["States", "Users", { role: "style" } ], // Column header
+			["California", 6924, "brown"],
+			["Texas", 3886, "brown"],
+			["Florida", 3611, "brown"],
+			["New York", 3474, "brown"],
+			["Illinois", 2121, "brown"],
+			["Pennsylvania", 1855, "brown"],
+			["Georgia", 1678, "brown"],
+			["New Jersey", 1549, "brown"],
+			["North Carolina", 1483, "brown"],
+			["Ohio", 1430, "brown"]
+		],
+    [ // June
+      ["States", "Users", { role: "style" } ], // Column header
+      ["California", 5317, "brown"],
+      ["Texas", 3143, "brown"],
+      ["Florida", 2747, "brown"],
+      ["New York", 2334, "brown"],
+      ["Illinois", 2086, "brown"],
+      ["Pennsylvania", 1488, "brown"],
+      ["Georgia", 1336, "brown"],
+      ["New Jersey", 1247, "brown"],
+      ["Virginia", 1234, "brown"],
+      ["Ohio", 1178, "brown"]
+    ]
+	];
+
+	var WD__dataCities = [
+		//Source: Audience > Geo > Location > Country > State (Click down to city level)
+		[ // Jan
+			["Cities", "Users", { role: "style" } ], // Column header
+			["Chicago", 3299, "royalblue"],
+			["New York", 1301, "royalblue"],
+			["Dallas", 714, "royalblue"],
+			["Los Angeles", 652, "royalblue"],
+			["Columbus", 643, "royalblue"],
+			["Atlanta", 602, "royalblue"],
+			["Houston", 577, "royalblue"],
+			["Washington", 427, "royalblue"],
+			["Las Vegas", 367, "royalblue"],
+			["Philadelphia", 357, "royalblue"]
+		],
+		[ // Feb
+			["Cities", "Users", { role: "style" } ], // Column header
+			["Chicago", 3312, "royalblue"],
+			["New York", 2054, "royalblue"],
+			["Los Angeles", 1368, "royalblue"],
+			["Dallas", 878, "royalblue"],
+			["Atlanta", 831, "royalblue"],
+			["Houston", 765, "royalblue"],
+			["Las Vegas", 465, "royalblue"],
+			["Phoenix", 442, "royalblue"],
+			["San Francisco", 439, "royalblue"],
+			["Seattle", 432, "royalblue"]
+		],
+		[ // March
+			["Cities", "Users", { role: "style" } ], // Column header
+			["Chicago", 4388, "royalblue"],
+			["New York", 1597, "royalblue"],
+			["Los Angeles", 1009, "royalblue"],
+			["Dallas", 729, "royalblue"],
+			["Atlanta", 714, "royalblue"],
+			["Houston", 635, "royalblue"],
+			["Philadelphia", 436, "royalblue"],
+			["Seattle", 406, "royalblue"],
+			["Las Vegas", 396, "royalblue"],
+			["Phoenix", 387, "royalblue"]
+		],
+		[ // April
+			["Cities", "Users", { role: "style" } ], // Column header
+			["New York", 1993, "royalblue"],
+			["Chicago", 1938, "royalblue"],
+			["Los Angeles", 1244, "royalblue"],
+			["Houston", 776, "royalblue"],
+			["Dallas", 705, "royalblue"],
+			["Atlanta", 621, "royalblue"],
+			["Las Vegas", 500, "royalblue"],
+			["Philadelphia", 433, "royalblue"],
+			["San Francisco", 421, "royalblue"],
+			["Seattle", 388, "royalblue"]
+		],
+		[ // May
+		//SOURCE LINK
+			["Cities", "Users", { role: "style" } ], // Column header
+			["New York", 2102, "royalblue"],
+			["Los Angeles", 1283, "royalblue"],
+			["Chicago", 1107, "royalblue"],
+			["Houston", 632, "royalblue"],
+			["Dallas", 626, "royalblue"],
+			["Atlanta", 575, "royalblue"],
+			["Philadelphia", 500, "royalblue"],
+			["Seattle", 445, "royalblue"],
+			["Las Vegas", 435, "royalblue"],
+			["San Francisco", 412, "royalblue"],
+		],
+    [ // June
+			["Cities", "Users", { role: "style" } ], // Column header
+			["New York", 1312, "royalblue"],
+			["Chicago", 1251, "royalblue"],
+			["Los Angeles", 877, "royalblue"],
+			["Houston", 560, "royalblue"],
+			["Dallas", 497, "royalblue"],
+			["Atlanta", 441, "royalblue"],
+			["Las Vegas", 391, "royalblue"],
+			["San Francisco", 296, "royalblue"],
+			["San Jose", 315, "royalblue"],
+			["Philadelphia", 296, "royalblue"]
+		]
+	];
+
+	var WD__dataInteractions = [
+		//Behaviour > Site COntent > Content Drilldown > Knowledge Center
+		[ // Jan
+			["Blogs Interactions", "Uniques", { role: "style" } ], // Column header
+			["/dummy-data/", 4929, "peru"],
+			["/dummy-data/", 3041, "peru"],
+			["/dummy-data/", 2196, "peru"],
+			["/dummy-data/", 2127, "peru"],
+			["/dummy-data/", 2096, "peru"],
+			["/dummy-data/", 1758, "peru"],
+			["/dummy-data/", 1527, "peru"],
+			["/dummy-data/", 1512, "peru"],
+			["/dummy-data/", 1481, "peru"],
+			["/dummy-data/", 1384, "peru"]
+		],
+		[ // Feb
+			["Blogs Interactions", "Uniques", { role: "style" } ], // Column header
+			["/dummy-data/", 4929, "peru"],
+			["/dummy-data/", 3041, "peru"],
+			["/dummy-data/", 2196, "peru"],
+			["/dummy-data/", 2127, "peru"],
+			["/dummy-data/", 2096, "peru"],
+			["/dummy-data/", 1758, "peru"],
+			["/dummy-data/", 1527, "peru"],
+			["/dummy-data/", 1512, "peru"],
+			["/dummy-data/", 1481, "peru"],
+			["/dummy-data/", 1384, "peru"]
+		],
+		[ // March
+			["Blogs Interactions", "Uniques", { role: "style" } ], // Column header
+			["/dummy-data/", 4929, "peru"],
+			["/dummy-data/", 3041, "peru"],
+			["/dummy-data/", 2196, "peru"],
+			["/dummy-data/", 2127, "peru"],
+			["/dummy-data/", 2096, "peru"],
+			["/dummy-data/", 1758, "peru"],
+			["/dummy-data/", 1527, "peru"],
+			["/dummy-data/", 1512, "peru"],
+			["/dummy-data/", 1481, "peru"],
+			["/dummy-data/", 1384, "peru"]
+		],
+		[ // April
+			["Blogs Interactions", "Uniques", { role: "style" } ], // Column header
+			["/dummy-data/", 4929, "peru"],
+			["/dummy-data/", 3041, "peru"],
+			["/dummy-data/", 2196, "peru"],
+			["/dummy-data/", 2127, "peru"],
+			["/dummy-data/", 2096, "peru"],
+			["/dummy-data/", 1758, "peru"],
+			["/dummy-data/", 1527, "peru"],
+			["/dummy-data/", 1512, "peru"],
+			["/dummy-data/", 1481, "peru"],
+			["/dummy-data/", 1384, "peru"]
+		],
+		[ // May
+			["Blogs Interactions", "Uniques", { role: "style" } ], // Column header
+			["/dummy-data/", 4929, "peru"],
+			["/dummy-data/", 3041, "peru"],
+			["/dummy-data/", 2196, "peru"],
+			["/dummy-data/", 2127, "peru"],
+			["/dummy-data/", 2096, "peru"],
+			["/dummy-data/", 1758, "peru"],
+			["/dummy-data/", 1527, "peru"],
+			["/dummy-data/", 1512, "peru"],
+			["/dummy-data/", 1481, "peru"],
+			["/dummy-data/", 1384, "peru"]
+		],
+    [ // June
+			["Blogs Interactions", "Uniques", { role: "style" } ], // Column header
+			["/dummy-data/", 4929, "peru"],
+			["/dummy-data/", 3041, "peru"],
+			["/dummy-data/", 2196, "peru"],
+			["/dummy-data/", 2127, "peru"],
+			["/dummy-data/", 2096, "peru"],
+			["/dummy-data/", 1758, "peru"],
+			["/dummy-data/", 1527, "peru"],
+			["/dummy-data/", 1512, "peru"],
+			["/dummy-data/", 1481, "peru"],
+			["/dummy-data/", 1384, "peru"]
+		]
+	];
+
+	var WD__dataInteractionsTx = [
+		//
+		[ // Jan
+			["Transactional Interactions", "Measures", { role: "style" } ], // Column header
+			["Revenue\n(Total: $25,993.98)", 25993.98, "darkslateblue"],
+			["Accounts Added\n(Total: 114,795)", 4674, "darkslateblue"]
+		],
+		[ // Feb
+			["Transactional Interactions", "Measures", { role: "style" } ], // Column header
+			["Revenue\n(Total: $43,641.08)", 17647.10, "darkslateblue"],
+			["Accounts Added\n(Total: 117,966)", 3171, "darkslateblue"]
+		],
+		[ // March
+			["Transactional Interactions", "Measures", { role: "style" } ], // Column header
+			["Revenue\n(Total: $65,195.17)", 21554.09, "darkslateblue"],
+			["Accounts Added\n(Total: 120,675)", 2709, "darkslateblue"]
+		],
+		[ // April
+			["Transactional Interactions", "Measures", { role: "style" } ], // Column header
+			["Revenue\n(Total: $91,325.04)", 26129.87, "darkslateblue"],
+			["Accounts Added\n(Total: 122,634)", 1959, "darkslateblue"]
+		],
+		[ // May
+			["Transactional Interactions", "Measures", { role: "style" } ], // Column header
+			["Revenue\n(Total: $91,325.04)", 26129.87, "darkslateblue"],
+			["Accounts Added\n(Total: 122,634)", 1959, "darkslateblue"]
+		],
+    [ // June
+			["Transactional Interactions", "Measures", { role: "style" } ], // Column header
+			["Revenue\n(Total: $91,325.04)", 26129.87, "darkslateblue"],
+			["Accounts Added\n(Total: 122,634)", 1959, "darkslateblue"]
+		]
+	];
+
+	var WD__dataDevicesGen = [
+		// Source: Audience > Mobile > Overview >
+		// 
+		[ // Jan
+			["Device Category", "Users"], // Column header
+			["Mobile", 40349],
+			["Desktop", 22094],
+			["Tablet", 2731]
+		],
+		[ // Feb
+			["Device Category", "Users"], // Column header
+			["Mobile", 50824],
+			["Desktop", 20735],
+			["Tablet", 4968]
+		],
+		[ // March
+			["Device Category", "Users"], // Column header
+			["Mobile", 45163],
+			["Desktop", 23882],
+			["Tablet", 4801]
+		],
+		[ // April
+			["Device Category", "Users"], // Column header
+			["Mobile", 42821],
+			["Desktop", 19269],
+			["Tablet", 3685]
+		],
+		[ // May
+			["Device Category", "Users"], // Column header
+			["Mobile", 39909],
+			["Desktop", 19118],
+			["Tablet", 3590]
+		],
+    [ // June
+			["Device Category", "Users"], // Column header
+			["Mobile", 30313],
+			["Desktop", 19773],
+			["Tablet", 2609]
+		]
+	];
+
+	var WD__dataOperatingSystems = [
+		// Source: Audience > Technology > Browser & OS
+		[ // Jan
+			["Browsers", "Users", { role: "style" } ], // Column header
+			["iOS", 22551, "rebeccapurple"],
+			["Android", 20183, "rebeccapurple"],
+			["Windows", 14744, "rebeccapurple"],
+			["Macintosh", 6023, "rebeccapurple"],
+			["Chrome OS", 920, "rebeccapurple"]
+		],
+		[ // Feb
+			["Browsers", "Users", { role: "style" } ], // Column header
+			["iOS", 29777, "rebeccapurple"],
+			["Android", 26601, "rebeccapurple"],
+			["Windows", 14254, "rebeccapurple"],
+			["Macintosh", 5340, "rebeccapurple"],
+			["Chrome OS", 867, "rebeccapurple"]
+		],
+		[ // March
+			["Browsers", "Users", { role: "style" } ], // Column header
+			["iOS", 27447, "rebeccapurple"],
+			["Android", 22274, "rebeccapurple"],
+			["Windows", 16460, "rebeccapurple"],
+			["Macintosh", 5720, "rebeccapurple"],
+			["Chrome OS", 1136, "rebeccapurple"]
+		],
+		[ // April
+			["Browsers", "Users", { role: "style" } ], // Column header
+			["iOS", 24959, "rebeccapurple"],
+			["Android", 21901, "rebeccapurple"],
+			["Windows", 13202, "rebeccapurple"],
+			["Macintosh", 4809, "rebeccapurple"],
+			["Chrome OS", 877, "rebeccapurple"]
+		],
+		[ // May
+			["Browsers", "Users", { role: "style" } ], // Column header
+			["iOS", 22044, "rebeccapurple"],
+			["Android", 21330, "rebeccapurple"],
+			["Windows", 13253, "rebeccapurple"],
+			["Macintosh", 4789, "rebeccapurple"],
+			["Chrome OS", 720, "rebeccapurple"]
+		],
+    [ // June
+			["Browsers", "Users", { role: "style" } ], // Column header
+			["iOS", 17271, "rebeccapurple"],
+			["Android", 15531, "rebeccapurple"],
+			["Windows", 14290, "rebeccapurple"],
+			["Macintosh", 4772, "rebeccapurple"],
+			["Chrome OS", 452, "rebeccapurple"]
+		]
+	];
+
+	var WD__dataQuality = [
+		[ // Jan
+			["Quality & Health", "Our Site", { role: "style" } ], // Column header
+			["quality 1", 1, "purple"],
+			["quality 2", 2, "purple"],
+			["quality 3", 3, "purple"],
+			["quality 4", 4, "purple"],
+			["quality 5", 5, "purple"]
+		],
+		[ // Feb
+			["Quality & Health", "Our Site", { role: "style" } ], // Column header
+			["quality 1", 1, "purple"],
+			["quality 2", 2, "purple"],
+			["quality 3", 3, "purple"],
+			["quality 4", 4, "purple"],
+			["quality 5", 5, "purple"]
+		],
+		[ // March
+			["Quality & Health", "Our Site", { role: "style" } ], // Column header
+			["quality 1", 1, "purple"],
+			["quality 2", 2, "purple"],
+			["quality 3", 3, "purple"],
+			["quality 4", 4, "purple"],
+			["quality 5", 5, "purple"]
+		],
+		[ // April
+			["Quality & Health", "Our Site", { role: "style" } ], // Column header
+			["quality 1", 1, "purple"],
+			["quality 2", 2, "purple"],
+			["quality 3", 3, "purple"],
+			["quality 4", 4, "purple"],
+			["quality 5", 5, "purple"]
+		],
+		[ // May
+			["Quality & Health", "Our Site", { role: "style" } ], // Column header
+			["quality 1", 1, "purple"],
+			["quality 2", 2, "purple"],
+			["quality 3", 3, "purple"],
+			["quality 4", 4, "purple"],
+			["quality 5", 5, "purple"]
+		]
+	];
+
+	var WD__dataObservations = [
+		//Source: Audience > Technology > Browser & OS
+		[ // Jan
+			["N/A"]
+		],
+		[ // Feb
+			["N/A"]
+		],
+		[ // Mar
+			["N/A"]
+		],
+		[ // Apr
+			["Traffic has risen year-over-year. However, there was an artificial dip in April due to an analytics misconfiguration."],
+			["Google search is the top traffic driver: nearly 2:1 compared to #2 (direct), with traffic primarily going to blog articles. We should continue to expand SEO efforts to build on conversion opportunities."],
+			["The website URL structure should be reviewed and updated to better measure types of content; e.g., products + services vs. blogs vs. about us, etc."]
+		],
+		[ // May
+			["Although aggregate unique page views decreased, total aggregate pageviews is increasing, suggesting that retargeting is bringing back a lot of views"],
+			["However, sales were still down compared to last year (-35%); FY20 has an abnormal pattern, although FY21 more closely follows FY19 and FY18."],
+			["Traffic patterns also correlate with sales patterns, including most spreads. Worth noting: FY21 pageviews are beginning to line up with FY20's."]
+		],
+    [ // May
+			["Although aggregate unique page views decreased, total aggregate pageviews is increasing, suggesting that retargeting is bringing back a lot of views"],
+			["However, sales were still down compared to last year (-28%); FY20 has an abnormal pattern, although FY21 more closely follows FY19 and FY18."],
+			["Traffic patterns also correlate with sales patterns, including most spreads. Worth noting: FY21 pageviews are beginning to line up with FY20's."]
+		]
+
+	];
+
+	var WD__dataDataSources = [
+		// HREF text, open in new window, HREF
+		// Hint: copy the entire month into a new editor window, now do a "search&replace" on the dates, starting with the end dates; e.g., 2020-10-31 to 2020-11-30, 20201031 to 20201130
+		[ // July
+			[ // 0: Pageviews
+				["1","1",WD__buildSourceURL("content-drilldown",20200701,20200731,"%5B%5D&_r.drilldown=/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20200701,20200731,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataPageviews));"]
+			],
+			[ // 1: Uniques
+				["1","1",WD__buildSourceURL("content-drilldown",20200701,20200731,"%5B%5D&_r.drilldown=/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20200701,20200731,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataUniques));"]
+			],
+			[ // 2: URLsUnique
+				["1","1",WD__buildSourceURL("content-pages",20200701,20200731,"/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20200701,20200731,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataURLsUnique[WD__month]));"]
+			],
+			[ // 3: SiteAreas
+				["1","1",WD__buildSourceURL("content-drilldown",20200701,20200731,"%5B%5D&_r.drilldown=/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataSiteAreas[WD__month]));"]
+			],
+			[ // 4: Services
+				["1","1",WD__buildSourceURL("content-drilldown",20200701,20200731,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fservices~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataServices[WD__month]));"]
+			],
+			[ // 5: Interactions: Content
+				["1","1",WD__buildSourceURL("content-pages",20200701,20200731,"~2Fservices",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20200701,20200731,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fstay-healthy~2F,analytics.pagePathLevel2:~2Fblog~2F/",-1)],
+				["3","1",WD__buildSourceURL("content-drilldown",20200701,20200731,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fdoctors~2F/",-1)],
+				["4","1",WD__buildSourceURL("content-drilldown",20200701,20200731,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Flocations~2F/",-1)],
+				["5","1",WD__buildSourceURL("content-drilldown",20200701,20200731,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fstay-healthy~2F,analytics.pagePathLevel2:~2Fclass~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataInteractions[WD__month]));"]
+			],
+			[ // 6: Interactions: Transactions
+				["1","1",WD__buildSourceURL("sitePayments","2020-07-01","2020-08-01",-1,-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20200701,20200731,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fsearch~2F/",-1)],
+				["3","0","javascript:alert('Online appointments come from Epic reports.');"],
+				["4","1",WD__buildSourceURL("siteClasses","2020-07-01","2020-08-01",-1,-1)],
+				["5","1",WD__buildSourceURL("sitePeople","2020-07-01","2020-08-01",-1,-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataInteractionsTx[WD__month]));"]
+			],
+			[ // 7: Google Search Terms
+				["1","1",WD__buildSourceURL("gsc",20200701,20200731,-1,-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataTerms[WD__month]));"]
+			],
+			[ // 8: Device Categories
+				["1","1",WD__buildSourceURL("gaMisc",20200701,20200731,"visitors-mobile-overview","/")],
+				["2","1",WD__buildSourceURL("gaMisc",20200701,20200731,"visitors-mobile-overview","analytics.fullReferrer&explorer-table.plotKeys=%5B%5D&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataDevicesGen[WD__month]));"]
+			],
+			[ // 9: Sources
+				["1","1",WD__buildSourceURL("gaMisc",20200701,20200731,"trafficsources-all-traffic","/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataSources[WD__month]));"]
+			],
+			[ // 10: States
+				["1","1","https://analytics.google.com/analytics/web/#/report/visitors-geo/a6177134w11927398p107813501/_u.date00=20200701&_u.date01=20200731&geo-table.plotKeys=%5B%5D&_r.drilldown=analytics.country:US,analytics.region:21137/"],
+				["2","1","https://analytics.google.com/analytics/web/#/report/visitors-geo/a6177134w11927398p107813501/_u.date00=20200701&_u.date01=20200731&geo-table.plotKeys=%5B%5D&geo-table.secSegmentId=analytics.fullReferrer&geo-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.country:US,analytics.region:21137/"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataStates[WD__month]));"]
+			],
+			[ // 11: Browsers
+				["1","1",WD__buildSourceURL("gaMisc",20200701,20200731,"visitors-browser","/")],
+				["2","1",WD__buildSourceURL("gaMisc",20200701,20200731,"visitors-browser","analytics.fullReferrer&explorer-table.plotKeys=%5B%5D&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataOperatingSystems[WD__month]));"]
+			],
+			[ // 12: Quality
+				["1","1",WD__buildSourceURL("Dci",-1,-1,-1,-1)],
+				["2","1",WD__buildSourceURL("QualityAssurance",-1,-1,-1,-1)],
+				["3","1",WD__buildSourceURL("Accessibility",-1,-1,-1,-1)],
+				["4","1",WD__buildSourceURL("SEOv2",-1,-1,-1,-1)],
+				["5","1","https://my2.siteimprove.com/Response/5773283912/5773293404/Custom/Details/Index?Status=All"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataOperatingSystems[WD__month]));"]
+			],
+			[ // 13: Countries
+				["1","1","https://analytics.google.com/analytics/web/#/report/content-drilldown/a6177134w11927398p107813501/_u.date00=20200701&_u.date01=20200731&explorer-table.plotKeys=%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Flocations~2F/"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataOperatingSystems[WD__month]));"]
+			]
+		],
+		[ // Aug
+			[ // 0: Pageviews
+				["1","1",WD__buildSourceURL("content-drilldown",20200801,20200831,"%5B%5D&_r.drilldown=/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20200801,20200831,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataPageviews));"]
+			],
+			[ // 1: Uniques
+				["1","1",WD__buildSourceURL("content-drilldown",20200801,20200831,"%5B%5D&_r.drilldown=/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20200801,20200831,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataUniques));"]
+			],
+			[ // 2: URLsUnique
+				["1","1",WD__buildSourceURL("content-pages",20200801,20200831,"/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20200801,20200831,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataURLsUnique[WD__month]));"]
+			],
+			[ // 3: SiteAreas
+				["1","1",WD__buildSourceURL("content-drilldown",20200801,20200831,"%5B%5D&_r.drilldown=/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataSiteAreas[WD__month]));"]
+			],
+			[ // 4: Services
+				["1","1",WD__buildSourceURL("content-drilldown",20200801,20200831,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fservices~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataServices[WD__month]));"]
+			],
+			[ // 5: Interactions: Content
+				["1","1",WD__buildSourceURL("content-pages",20200801,20200831,"~2Fservices",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20200801,20200831,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fstay-healthy~2F,analytics.pagePathLevel2:~2Fblog~2F/",-1)],
+				["3","1",WD__buildSourceURL("content-drilldown",20200801,20200831,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fdoctors~2F/",-1)],
+				["4","1",WD__buildSourceURL("content-drilldown",20200801,20200831,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Flocations~2F/",-1)],
+				["5","1",WD__buildSourceURL("content-drilldown",20200801,20200831,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fstay-healthy~2F,analytics.pagePathLevel2:~2Fclass~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataInteractions[WD__month]));"]
+			],
+			[ // 6: Interactions: Transactions
+				["1","1",WD__buildSourceURL("sitePayments","2020-08-01","2020-09-01",-1,-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20200801,20200831,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fsearch~2F/",-1)],
+				["3","0","javascript:alert('Online appointments come from Epic reports.');"],
+				["4","1",WD__buildSourceURL("siteClasses","2020-08-01","2020-09-01",-1,-1)],
+				["5","1",WD__buildSourceURL("sitePeople","2020-08-01","2020-09-01",-1,-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataInteractionsTx[WD__month]));"]
+			],
+			[ // 7: Google Search Terms
+				["1","1",WD__buildSourceURL("gsc",20200801,20200831,-1,-1)]
+			],
+			[ // 8: Device Categories
+				["1","1",WD__buildSourceURL("gaMisc",20200801,20200831,"visitors-mobile-overview","/")],
+				["2","1",WD__buildSourceURL("gaMisc",20200801,20200831,"visitors-mobile-overview","analytics.fullReferrer&explorer-table.plotKeys=%5B%5D&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataDevicesGen[WD__month]));"]
+			],
+			[ // 9: Sources
+				["1","1",WD__buildSourceURL("gaMisc",20200801,20200831,"trafficsources-all-traffic","/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataSources[WD__month]));"]
+			],
+			[ // 10: States
+				["1","1","https://analytics.google.com/analytics/web/#/report/visitors-geo/a6177134w11927398p107813501/_u.date00=20200801&_u.date01=20200831&geo-table.plotKeys=%5B%5D&_r.drilldown=analytics.country:US,analytics.region:21137/"],
+				["2","1","https://analytics.google.com/analytics/web/#/report/visitors-geo/a6177134w11927398p107813501/_u.date00=20200801&_u.date01=20200831&geo-table.plotKeys=%5B%5D&geo-table.secSegmentId=analytics.fullReferrer&geo-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.country:US,analytics.region:21137/"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataStates[WD__month]));"]
+			],
+			[ // 11: Browsers
+				["1","1",WD__buildSourceURL("gaMisc",20200801,20200831,"visitors-browser",-1)],
+				["2","1",WD__buildSourceURL("gaMisc",20200801,20200831,"visitors-browser","analytics.fullReferrer&explorer-table.plotKeys=%5B%5D&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataOperatingSystems[WD__month]));"]
+			],
+			[ // 12: Quality
+				["1","1",WD__buildSourceURL("Dci",-1,-1,-1,-1)],
+				["2","1",WD__buildSourceURL("QualityAssurance",-1,-1,-1,-1)],
+				["3","1",WD__buildSourceURL("Accessibility",-1,-1,-1,-1)],
+				["4","1",WD__buildSourceURL("SEOv2",-1,-1,-1,-1)],
+				["5","1","https://my2.siteimprove.com/Response/5773283912/5773293404/Custom/Details/Index?Status=All"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataOperatingSystems[WD__month]));"]
+			],
+			[ // 13: Locations
+				["1","1","https://analytics.google.com/analytics/web/#/report/content-drilldown/a6177134w11927398p107813501/_u.date00=20200801&_u.date01=20200831&explorer-table.plotKeys=%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Flocations~2F/"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataOperatingSystems[WD__month]));"]
+			]
+		],
+		[ // Sept
+			[ // 0: Pageviews
+				["1","1",WD__buildSourceURL("content-drilldown",20200901,20200930,"%5B%5D&_r.drilldown=/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20200901,20200930,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataPageviews));"]
+			],
+			[ // 1: Uniques
+				["1","1",WD__buildSourceURL("content-drilldown",20200901,20200930,"%5B%5D&_r.drilldown=/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20200901,20200930,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataUniques));"]
+			],
+			[ // 2: URLsUnique
+				["1","1",WD__buildSourceURL("content-pages",20200901,20200930,"/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20200901,20200930,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataURLsUnique[WD__month]));"]
+			],
+			[ // 3: SiteAreas
+				["1","1",WD__buildSourceURL("content-drilldown",20200901,20200930,"%5B%5D&_r.drilldown=/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataSiteAreas[WD__month]));"]
+			],
+			[ // 4: Services
+				["1","1",WD__buildSourceURL("content-drilldown",20200901,20200930,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fservices~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataServices[WD__month]));"]
+			],
+			[ // 5: Interactions: Content
+				["1","1",WD__buildSourceURL("content-pages",20200901,20200930,"~2Fservices",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20200901,20200930,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fstay-healthy~2F,analytics.pagePathLevel2:~2Fblog~2F/",-1)],
+				["3","1",WD__buildSourceURL("content-drilldown",20200901,20200930,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fdoctors~2F/",-1)],
+				["4","1",WD__buildSourceURL("content-drilldown",20200901,20200930,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Flocations~2F/",-1)],
+				["5","1",WD__buildSourceURL("content-drilldown",20200901,20200930,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fstay-healthy~2F,analytics.pagePathLevel2:~2Fclass~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataInteractions[WD__month]));"]
+			],
+			[ // 6: Interactions: Transactions
+				["1","1",WD__buildSourceURL("sitePayments","2020-09-01","2020-10-01",-1,-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20200901,20200930,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fsearch~2F/",-1)],
+				["3","0","javascript:alert('Online appointments come from Epic reports.');"],
+				["4","1",WD__buildSourceURL("siteClasses","2020-09-01","2020-10-01",-1,-1)],
+				["5","1",WD__buildSourceURL("sitePeople","2020-09-01","2020-10-01",-1,-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataInteractionsTx[WD__month]));"]
+			],
+			[ // 7: Google Search Terms
+				["1","1",WD__buildSourceURL("gsc",20200901,20200930,-1,-1)]
+			],
+			[ // 8: Device Categories
+				["1","1",WD__buildSourceURL("gaMisc",20200901,20200930,"visitors-mobile-overview","/")],
+				["2","1",WD__buildSourceURL("gaMisc",20200901,20200930,"visitors-mobile-overview","analytics.fullReferrer&explorer-table.plotKeys=%5B%5D&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataDevicesGen[WD__month]));"]
+			],
+			[ // 9: Sources
+				["1","1",WD__buildSourceURL("gaMisc",20200901,20200930,"trafficsources-all-traffic","/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataSources[WD__month]));"]
+			],
+			[ // 10: States
+				["1","1","https://analytics.google.com/analytics/web/#/report/visitors-geo/a6177134w11927398p107813501/_u.date00=20200901&_u.date01=20200930&geo-table.plotKeys=%5B%5D&_r.drilldown=analytics.country:US,analytics.region:21137/"],
+				["2","1","https://analytics.google.com/analytics/web/#/report/visitors-geo/a6177134w11927398p107813501/_u.date00=20200901&_u.date01=20200930&geo-table.plotKeys=%5B%5D&geo-table.secSegmentId=analytics.fullReferrer&geo-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.country:US,analytics.region:21137/"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataStates[WD__month]));"]
+			],
+			[ // 11: Browsers
+				["1","1",WD__buildSourceURL("gaMisc",20200901,20200930,"visitors-browser",-1)],
+				["2","1",WD__buildSourceURL("gaMisc",20200901,20200930,"visitors-browser","analytics.fullReferrer&explorer-table.plotKeys=%5B%5D&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataOperatingSystems[WD__month]));"]
+			],
+			[ // 12: Quality
+				["1","1",WD__buildSourceURL("Dci",-1,-1,-1,-1)],
+				["2","1",WD__buildSourceURL("QualityAssurance",-1,-1,-1,-1)],
+				["3","1",WD__buildSourceURL("Accessibility",-1,-1,-1,-1)],
+				["4","1",WD__buildSourceURL("SEOv2",-1,-1,-1,-1)],
+				["5","1","https://my2.siteimprove.com/Response/5773283912/5773293404/Custom/Details/Index?Status=All"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataOperatingSystems[WD__month]));"]
+			],
+			[ // 13: Locations
+				["1","1","https://analytics.google.com/analytics/web/#/report/content-drilldown/a6177134w11927398p107813501/_u.date00=20200901&_u.date01=20200930&explorer-table.plotKeys=%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Flocations~2F/"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataOperatingSystems[WD__month]));"]
+			]
+		],
+		[ // Oct
+			[ // 0: Pageviews
+				["1","1",WD__buildSourceURL("content-drilldown",20201001,20201031,"%5B%5D&_r.drilldown=/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20201001,20201031,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataPageviews));"]
+			],
+			[ // 1: Uniques
+				["1","1",WD__buildSourceURL("content-drilldown",20201001,20201031,"%5B%5D&_r.drilldown=/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20201001,20201031,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataUniques));"]
+			],
+			[ // 2: URLsUnique
+				["1","1",WD__buildSourceURL("content-pages",20201001,20201031,"/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20201001,20201031,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataURLsUnique[WD__month]));"]
+			],
+			[ // 3: SiteAreas
+				["1","1",WD__buildSourceURL("content-drilldown",20201001,20201031,"%5B%5D&_r.drilldown=/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataSiteAreas[WD__month]));"]
+			],
+			[ // 4: Services
+				["1","1",WD__buildSourceURL("content-drilldown",20201001,20201031,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fservices~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataServices[WD__month]));"]
+			],
+			[ // 5: Interactions: Content
+				["1","1",WD__buildSourceURL("content-pages",20201001,20201031,"~2Fservices",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20201001,20201031,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fstay-healthy~2F,analytics.pagePathLevel2:~2Fblog~2F/",-1)],
+				["3","1",WD__buildSourceURL("content-drilldown",20201001,20201031,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fdoctors~2F/",-1)],
+				["4","1",WD__buildSourceURL("content-drilldown",20201001,20201031,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Flocations~2F/",-1)],
+				["5","1",WD__buildSourceURL("content-drilldown",20201001,20201031,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fstay-healthy~2F,analytics.pagePathLevel2:~2Fclass~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataInteractions[WD__month]));"]
+			],
+			[ // 6: Interactions: Transactions
+				["1","1",WD__buildSourceURL("sitePayments","2020-10-01","2020-11-01",-1,-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20201001,20201031,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fsearch~2F/",-1)],
+				["3","0","javascript:alert('Online appointments come from Epic reports.');"],
+				["4","1",WD__buildSourceURL("siteClasses","2020-10-01","2020-11-01",-1,-1)],
+				["5","1",WD__buildSourceURL("sitePeople","2020-10-01","2020-11-01",-1,-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataInteractionsTx[WD__month]));"]
+			],
+			[ // 7: Google Search Terms
+				["1","1",WD__buildSourceURL("gsc",20201001,20201031,-1,-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataTerms[WD__month]));"]
+			],
+			[ // 8: Device Categories
+				["1","1",WD__buildSourceURL("gaMisc",20201001,20201031,"visitors-mobile-overview","/")],
+				["2","1",WD__buildSourceURL("gaMisc",20201001,20201031,"visitors-mobile-overview","analytics.fullReferrer&explorer-table.plotKeys=%5B%5D&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataDevicesGen[WD__month]));"]
+			],
+			[ // 9: Sources
+				["1","1",WD__buildSourceURL("gaMisc",20201001,20201031,"trafficsources-all-traffic","/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataSources[WD__month]));"]
+			],
+			[ // 10: States
+				["1","1","https://analytics.google.com/analytics/web/#/report/visitors-geo/a6177134w11927398p107813501/_u.date00=20201001&_u.date01=20201031&geo-table.plotKeys=%5B%5D&_r.drilldown=analytics.country:US,analytics.region:21137/"],
+				["2","1","https://analytics.google.com/analytics/web/#/report/visitors-geo/a6177134w11927398p107813501/_u.date00=20201001&_u.date01=20201031&geo-table.plotKeys=%5B%5D&geo-table.secSegmentId=analytics.fullReferrer&geo-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.country:US,analytics.region:21137/"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataStates[WD__month]));"]
+			],
+			[ // 11: Browsers
+				["1","1",WD__buildSourceURL("gaMisc",20201001,20201031,"visitors-browser",-1)],
+				["2","1",WD__buildSourceURL("gaMisc",20201001,20201031,"visitors-browser","analytics.fullReferrer&explorer-table.plotKeys=%5B%5D&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataOperatingSystems[WD__month]));"]
+			],
+			[ // 12: Quality
+				["1","1",WD__buildSourceURL("Dci",-1,-1,-1,-1)],
+				["2","1",WD__buildSourceURL("QualityAssurance",-1,-1,-1,-1)],
+				["3","1",WD__buildSourceURL("Accessibility",-1,-1,-1,-1)],
+				["4","1",WD__buildSourceURL("SEOv2",-1,-1,-1,-1)],
+				["5","1","https://my2.siteimprove.com/Response/5773283912/5773293404/Custom/Details/Index?Status=All"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataOperatingSystems[WD__month]));"]
+			],
+			[ // 13: Locations
+				["1","1","https://analytics.google.com/analytics/web/#/report/content-drilldown/a6177134w11927398p107813501/_u.date00=20201001&_u.date01=20201031&explorer-table.plotKeys=%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Flocations~2F/"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataOperatingSystems[WD__month]));"]
+			]
+		],
+		[ // Nov
+			[ // 0: Pageviews
+				["1","1",WD__buildSourceURL("content-drilldown",20201101,20201130,"%5B%5D&_r.drilldown=/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20201101,20201130,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataPageviews));"]
+			],
+			[ // 1: Uniques
+				["1","1",WD__buildSourceURL("content-drilldown",20201101,20201130,"%5B%5D&_r.drilldown=/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20201101,20201130,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataUniques));"]
+			],
+			[ // 2: URLsUnique
+				["1","1",WD__buildSourceURL("content-pages",20201101,20201130,"/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20201101,20201130,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataURLsUnique[WD__month]));"]
+			],
+			[ // 3: SiteAreas
+				["1","1",WD__buildSourceURL("content-drilldown",20201101,20201130,"%5B%5D&_r.drilldown=/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataSiteAreas[WD__month]));"]
+			],
+			[ // 4: Services
+				["1","1",WD__buildSourceURL("content-drilldown",20201101,20201130,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fservices~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataServices[WD__month]));"]
+			],
+			[ // 5: Interactions: Content
+				["1","1",WD__buildSourceURL("content-pages",20201101,20201130,"~2Fservices",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20201101,20201130,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fstay-healthy~2F,analytics.pagePathLevel2:~2Fblog~2F/",-1)],
+				["3","1",WD__buildSourceURL("content-drilldown",20201101,20201130,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fdoctors~2F/",-1)],
+				["4","1",WD__buildSourceURL("content-drilldown",20201101,20201130,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Flocations~2F/",-1)],
+				["5","1",WD__buildSourceURL("content-drilldown",20201101,20201130,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fstay-healthy~2F,analytics.pagePathLevel2:~2Fclass~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataInteractions[WD__month]));"]
+			],
+			[ // 6: Interactions: Transactions
+				["1","1",WD__buildSourceURL("sitePayments","2020-11-01","2020-12-01",-1,-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20201101,20201130,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fsearch~2F/",-1)],
+				["3","0","javascript:alert('Online appointments come from Epic reports.');"],
+				["4","1",WD__buildSourceURL("siteClasses","2020-11-01","2020-12-01",-1,-1)],
+				["5","1",WD__buildSourceURL("sitePeople","2020-11-01","2020-12-01",-1,-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataInteractionsTx[WD__month]));"]
+			],
+			[ // 7: Google Search Terms
+				["1","1",WD__buildSourceURL("gsc",20201101,20201130,-1,-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataTerms[WD__month]));"]
+			],
+			[ // 8: Device Categories
+				["1","1",WD__buildSourceURL("gaMisc",20201101,20201130,"visitors-mobile-overview","/")],
+				["2","1",WD__buildSourceURL("gaMisc",20201101,20201130,"visitors-mobile-overview","analytics.fullReferrer&explorer-table.plotKeys=%5B%5D&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataDevicesGen[WD__month]));"]
+			],
+			[ // 9: Sources
+				["1","1",WD__buildSourceURL("gaMisc",20201101,20201130,"trafficsources-all-traffic","/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataSources[WD__month]));"]
+			],
+			[ // 10: States
+				["1","1","https://analytics.google.com/analytics/web/#/report/visitors-geo/a6177134w11927398p107813501/_u.date00=20201101&_u.date01=20201130&geo-table.plotKeys=%5B%5D&_r.drilldown=analytics.country:US,analytics.region:21137/"],
+				["2","1","https://analytics.google.com/analytics/web/#/report/visitors-geo/a6177134w11927398p107813501/_u.date00=20201101&_u.date01=20201130&geo-table.plotKeys=%5B%5D&geo-table.secSegmentId=analytics.fullReferrer&geo-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.country:US,analytics.region:21137/"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataStates[WD__month]));"]
+			],
+			[ // 11: Browsers
+				["1","1",WD__buildSourceURL("gaMisc",20201101,20201130,"visitors-browser",-1)],
+				["2","1",WD__buildSourceURL("gaMisc",20201101,20201130,"visitors-browser","analytics.fullReferrer&explorer-table.plotKeys=%5B%5D&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataOperatingSystems[WD__month]));"]
+			],
+			[ // 12: Quality
+				["1","1",WD__buildSourceURL("Dci",-1,-1,-1,-1)],
+				["2","1",WD__buildSourceURL("QualityAssurance",-1,-1,-1,-1)],
+				["3","1",WD__buildSourceURL("Accessibility",-1,-1,-1,-1)],
+				["4","1",WD__buildSourceURL("SEOv2",-1,-1,-1,-1)],
+				["5","1","https://my2.siteimprove.com/Response/5773283912/5773293404/Custom/Details/Index?Status=All"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataOperatingSystems[WD__month]));"]
+			],
+			[ // 13: Locations
+				["1","1","https://analytics.google.com/analytics/web/#/report/content-drilldown/a6177134w11927398p107813501/_u.date00=20201101&_u.date01=20201130&explorer-table.plotKeys=%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Flocations~2F/"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataCountries[WD__month]));"]
+			]
+		],
+		[ // Dec
+			[ // 0: Pageviews
+				["1","1",WD__buildSourceURL("content-drilldown",20201201,20201231,"%5B%5D&_r.drilldown=/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20201201,20201231,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataPageviews));"]
+			],
+			[ // 1: Uniques
+				["1","1",WD__buildSourceURL("content-drilldown",20201201,20201231,"%5B%5D&_r.drilldown=/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20201201,20201231,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataUniques));"]
+			],
+			[ // 2: URLsUnique
+				["1","1",WD__buildSourceURL("content-pages",20201201,20201231,"/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20201201,20201231,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataURLsUnique[WD__month]));"]
+			],
+			[ // 3: SiteAreas
+				["1","1",WD__buildSourceURL("content-drilldown",20201201,20201231,"%5B%5D&_r.drilldown=/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataSiteAreas[WD__month]));"]
+			],
+			[ // 4: Services
+				["1","1",WD__buildSourceURL("content-drilldown",20201201,20201231,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fservices~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataServices[WD__month]));"]
+			],
+			[ // 5: Interactions: Content
+				["1","1",WD__buildSourceURL("content-pages",20201201,20201231,"~2Fservices",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20201201,20201231,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fstay-healthy~2F,analytics.pagePathLevel2:~2Fblog~2F/",-1)],
+				["3","1",WD__buildSourceURL("content-drilldown",20201201,20201231,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fdoctors~2F/",-1)],
+				["4","1",WD__buildSourceURL("content-drilldown",20201201,20201231,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Flocations~2F/",-1)],
+				["5","1",WD__buildSourceURL("content-drilldown",20201201,20201231,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fstay-healthy~2F,analytics.pagePathLevel2:~2Fclass~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataInteractions[WD__month]));"]
+			],
+			[ // 6: Interactions: Transactions
+				["1","1",WD__buildSourceURL("sitePayments","2020-12-01","2021-01-01",-1,-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20201201,20201231,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fsearch~2F/",-1)],
+				["3","0","javascript:alert('Online appointments come from Epic reports.');"],
+				["4","1",WD__buildSourceURL("siteClasses","2020-12-01","2021-01-01",-1,-1)],
+				["5","1",WD__buildSourceURL("sitePeople","2020-12-01","2021-01-01",-1,-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataInteractionsTx[WD__month]));"]
+			],
+			[ // 7: Google Search Terms
+				["1","1",WD__buildSourceURL("gsc",20201201,20201231,-1,-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataTerms[WD__month]));"]
+			],
+			[ // 8: Device Categories
+				["1","1",WD__buildSourceURL("gaMisc",20201201,20201231,"visitors-mobile-overview","/")],
+				["2","1",WD__buildSourceURL("gaMisc",20201201,20201231,"visitors-mobile-overview","analytics.fullReferrer&explorer-table.plotKeys=%5B%5D&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataDevicesGen[WD__month]));"]
+			],
+			[ // 9: Sources
+				["1","1",WD__buildSourceURL("gaMisc",20201201,20201231,"trafficsources-all-traffic","/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataSources[WD__month]));"]
+			],
+			[ // 10: States
+				["1","1","https://analytics.google.com/analytics/web/#/report/visitors-geo/a6177134w11927398p107813501/_u.date00=20201201&_u.date01=20201231&geo-table.plotKeys=%5B%5D&_r.drilldown=analytics.country:US,analytics.region:21137/"],
+				["2","1","https://analytics.google.com/analytics/web/#/report/visitors-geo/a6177134w11927398p107813501/_u.date00=20201201&_u.date01=20201231&geo-table.plotKeys=%5B%5D&geo-table.secSegmentId=analytics.fullReferrer&geo-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.country:US,analytics.region:21137/"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataStates[WD__month]));"]
+			],
+			[ // 11: Browsers
+				["1","1",WD__buildSourceURL("gaMisc",20201201,20201231,"visitors-browser","/")],
+				["2","1",WD__buildSourceURL("gaMisc",20201201,20201231,"visitors-browser","analytics.fullReferrer&explorer-table.plotKeys=%5B%5D&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataOperatingSystems[WD__month]));"]
+			],
+			[ // 12: Quality
+				["1","1",WD__buildSourceURL("Dci",-1,-1,-1,-1)],
+				["2","1",WD__buildSourceURL("QualityAssurance",-1,-1,-1,-1)],
+				["3","1",WD__buildSourceURL("Accessibility",-1,-1,-1,-1)],
+				["4","1",WD__buildSourceURL("SEOv2",-1,-1,-1,-1)],
+				["5","1","https://my2.siteimprove.com/Response/5773283912/5773293404/Custom/Details/Index?Status=All"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataOperatingSystems[WD__month]));"]
+			],
+			[ // 13: Locations
+				["1","1","https://analytics.google.com/analytics/web/#/report/content-drilldown/a6177134w11927398p107813501/_u.date00=20201201&_u.date01=20201231&explorer-table.plotKeys=%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Flocations~2F/"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataCountries[WD__month]));"]
+			]
+		],
+		[ // Jan
+			[ // 0: Pageviews
+				["1","1",WD__buildSourceURL("content-drilldown",20210101,20210131,"%5B%5D&_r.drilldown=/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20210101,20210131,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataPageviews));"]
+			],
+			[ // 1: Uniques
+				["1","1",WD__buildSourceURL("content-drilldown",20210101,20210131,"%5B%5D&_r.drilldown=/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20210101,20210131,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataUniques));"]
+			],
+			[ // 2: URLsUnique
+				["1","1",WD__buildSourceURL("content-pages",20210101,20210131,"/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20210101,20210131,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataURLsUnique[WD__month]));"]
+			],
+			[ // 3: SiteAreas
+				["1","1",WD__buildSourceURL("content-drilldown",20210101,20210131,"%5B%5D&_r.drilldown=/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataSiteAreas[WD__month]));"]
+			],
+			[ // 4: Services
+				["1","1",WD__buildSourceURL("content-drilldown",20210101,20210131,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fservices~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataServices[WD__month]));"]
+			],
+			[ // 5: Interactions: Content
+				["1","1",WD__buildSourceURL("content-pages",20210101,20210131,"~2Fservices",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20210101,20210131,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fstay-healthy~2F,analytics.pagePathLevel2:~2Fblog~2F/",-1)],
+				["3","1",WD__buildSourceURL("content-drilldown",20210101,20210131,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fdoctors~2F/",-1)],
+				["4","1",WD__buildSourceURL("content-drilldown",20210101,20210131,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Flocations~2F/",-1)],
+				["5","1",WD__buildSourceURL("content-drilldown",20210101,20210131,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fstay-healthy~2F,analytics.pagePathLevel2:~2Fclass~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataInteractions[WD__month]));"]
+			],
+			[ // 6: Interactions: Transactions
+				["1","1",WD__buildSourceURL("sitePayments","2021-01-01","2021-02-01",-1,-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20210101,20210131,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fsearch~2F/",-1)],
+				["3","0","javascript:alert('Online appointments come from Epic reports.');"],
+				["4","1",WD__buildSourceURL("siteClasses","2021-01-01","2021-02-01",-1,-1)],
+				["5","1",WD__buildSourceURL("sitePeople","2021-01-01","2021-02-01",-1,-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataInteractionsTx[WD__month]));"]
+			],
+			[ // 7: Google Search Terms
+				["1","1",WD__buildSourceURL("gsc",20210101,20210131,-1,-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataTerms[WD__month]));"]
+			],
+			[ // 8: Device Categories
+				["1","1",WD__buildSourceURL("gaMisc",20210101,20210131,"visitors-mobile-overview","/")],
+				["2","1",WD__buildSourceURL("gaMisc",20210101,20210131,"visitors-mobile-overview","analytics.fullReferrer&explorer-table.plotKeys=%5B%5D&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataDevicesGen[WD__month]));"]
+			],
+			[ // 9: Sources
+				["1","1",WD__buildSourceURL("gaMisc",20210101,20210131,"trafficsources-all-traffic","/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataSources[WD__month]));"]
+			],
+			[ // 10: States
+				["1","1","https://analytics.google.com/analytics/web/#/report/visitors-geo/a6177134w11927398p107813501/_u.date00=20210101&_u.date01=20210131&geo-table.plotKeys=%5B%5D&_r.drilldown=analytics.country:US,analytics.region:21137/"],
+				["2","1","https://analytics.google.com/analytics/web/#/report/visitors-geo/a6177134w11927398p107813501/_u.date00=20210101&_u.date01=20210131&geo-table.plotKeys=%5B%5D&geo-table.secSegmentId=analytics.fullReferrer&geo-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.country:US,analytics.region:21137/"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataStates[WD__month]));"]
+			],
+			[ // 11: Browsers
+				["1","1",WD__buildSourceURL("gaMisc",20210101,20210131,"visitors-browser","/")],
+				["2","1",WD__buildSourceURL("gaMisc",20210101,20210131,"visitors-browser","analytics.fullReferrer&explorer-table.plotKeys=%5B%5D&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataOperatingSystems[WD__month]));"]
+			],
+			[ // 12: Quality
+				["1","1",WD__buildSourceURL("Dci",-1,-1,-1,-1)],
+				["2","1",WD__buildSourceURL("QualityAssurance",-1,-1,-1,-1)],
+				["3","1",WD__buildSourceURL("Accessibility",-1,-1,-1,-1)],
+				["4","1",WD__buildSourceURL("SEOv2",-1,-1,-1,-1)],
+				["5","1","https://my2.siteimprove.com/Response/5773283912/5773293404/Custom/Details/Index?Status=All"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataOperatingSystems[WD__month]));"]
+			],
+			[ // 13: Locations
+				["1","1","https://analytics.google.com/analytics/web/#/report/content-drilldown/a6177134w11927398p107813501/_u.date00=20210101&_u.date01=20210131&explorer-table.plotKeys=%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Flocations~2F/"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataCountries[WD__month]));"]
+			]
+		],
+		[ // Feb
+			[ // 0: Pageviews
+				["1","1",WD__buildSourceURL("content-drilldown",20210201,20210228,"%5B%5D&_r.drilldown=/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20210201,20210228,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataPageviews));"]
+			],
+			[ // 1: Uniques
+				["1","1",WD__buildSourceURL("content-drilldown",20210201,20210228,"%5B%5D&_r.drilldown=/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20210201,20210228,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataUniques));"]
+			],
+			[ // 2: URLsUnique
+				["1","1",WD__buildSourceURL("content-pages",20210201,20210228,"/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20210201,20210228,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataURLsUnique[WD__month]));"]
+			],
+			[ // 3: SiteAreas
+				["1","1",WD__buildSourceURL("content-drilldown",20210201,20210228,"%5B%5D&_r.drilldown=/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataSiteAreas[WD__month]));"]
+			],
+			[ // 4: Services
+				["1","1",WD__buildSourceURL("content-drilldown",20210201,20210228,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fservices~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataServices[WD__month]));"]
+			],
+			[ // 5: Interactions: Content
+				["1","1",WD__buildSourceURL("content-pages",20210201,20210228,"~2Fservices",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20210201,20210228,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fstay-healthy~2F,analytics.pagePathLevel2:~2Fblog~2F/",-1)],
+				["3","1",WD__buildSourceURL("content-drilldown",20210201,20210228,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fdoctors~2F/",-1)],
+				["4","1",WD__buildSourceURL("content-drilldown",20210201,20210228,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Flocations~2F/",-1)],
+				["5","1",WD__buildSourceURL("content-drilldown",20210201,20210228,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fstay-healthy~2F,analytics.pagePathLevel2:~2Fclass~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataInteractions[WD__month]));"]
+			],
+			[ // 6: Interactions: Transactions
+				["1","1",WD__buildSourceURL("sitePayments","2021-02-01","2021-03-01",-1,-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20210201,20210228,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fsearch~2F/",-1)],
+				["3","0","javascript:alert('Online appointments come from Epic reports.');"],
+				["4","1",WD__buildSourceURL("siteClasses","2021-02-01","2021-03-01",-1,-1)],
+				["5","1",WD__buildSourceURL("sitePeople","2021-02-01","2021-03-01",-1,-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataInteractionsTx[WD__month]));"]
+			],
+			[ // 7: Google Search Terms
+				["1","1",WD__buildSourceURL("gsc",20210201,20210228,-1,-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataTerms[WD__month]));"]
+			],
+			[ // 8: Device Categories
+				["1","1",WD__buildSourceURL("gaMisc",20210201,20210228,"visitors-mobile-overview","/")],
+				["2","1",WD__buildSourceURL("gaMisc",20210201,20210228,"visitors-mobile-overview","analytics.fullReferrer&explorer-table.plotKeys=%5B%5D&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataDevicesGen[WD__month]));"]
+			],
+			[ // 9: Sources
+				["1","1",WD__buildSourceURL("gaMisc",20210201,20210228,"trafficsources-all-traffic","/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataSources[WD__month]));"]
+			],
+			[ // 10: States
+				["1","1","https://analytics.google.com/analytics/web/#/report/visitors-geo/a6177134w11927398p107813501/_u.date00=20210201&_u.date01=20210228&geo-table.plotKeys=%5B%5D&_r.drilldown=analytics.country:US,analytics.region:21137/"],
+				["2","1","https://analytics.google.com/analytics/web/#/report/visitors-geo/a6177134w11927398p107813501/_u.date00=20210201&_u.date01=20210228&geo-table.plotKeys=%5B%5D&geo-table.secSegmentId=analytics.fullReferrer&geo-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.country:US,analytics.region:21137/"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataStates[WD__month]));"]
+			],
+			[ // 11: Browsers
+				["1","1",WD__buildSourceURL("gaMisc",20210201,20210228,"visitors-browser","/")],
+				["2","1",WD__buildSourceURL("gaMisc",20210201,20210228,"visitors-browser","analytics.fullReferrer&explorer-table.plotKeys=%5B%5D&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataOperatingSystems[WD__month]));"]
+			],
+			[ // 12: Quality
+				["1","1",WD__buildSourceURL("Dci",-1,-1,-1,-1)],
+				["2","1",WD__buildSourceURL("QualityAssurance",-1,-1,-1,-1)],
+				["3","1",WD__buildSourceURL("Accessibility",-1,-1,-1,-1)],
+				["4","1",WD__buildSourceURL("SEOv2",-1,-1,-1,-1)],
+				["5","1","https://my2.siteimprove.com/Response/5773283912/5773293404/Custom/Details/Index?Status=All"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataOperatingSystems[WD__month]));"]
+			],
+			[ // 13: Locations
+				["1","1","https://analytics.google.com/analytics/web/#/report/content-drilldown/a6177134w11927398p107813501/_u.date00=20210201&_u.date01=20210228&explorer-table.plotKeys=%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Flocations~2F/"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataCountries[WD__month]));"]
+			]
+		],
+		[ // Mar
+			[ // 0: Pageviews
+				["1","1",WD__buildSourceURL("content-drilldown",20210301,20210331,"%5B%5D&_r.drilldown=/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20210301,20210331,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataPageviews));"]
+			],
+			[ // 1: Uniques
+				["1","1",WD__buildSourceURL("content-drilldown",20210301,20210331,"%5B%5D&_r.drilldown=/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20210301,20210331,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataUniques));"]
+			],
+			[ // 2: URLsUnique
+				["1","1",WD__buildSourceURL("content-pages",20210301,20210331,"/",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20210301,20210331,"%5B%5D&explorer-table.secSegmentId=analytics.fullReferrer&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.pagePath:~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataURLsUnique[WD__month]));"]
+			],
+			[ // 3: SiteAreas
+				["1","1",WD__buildSourceURL("content-drilldown",20210301,20210331,"%5B%5D&_r.drilldown=/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataSiteAreas[WD__month]));"]
+			],
+			[ // 4: Services
+				["1","1",WD__buildSourceURL("content-drilldown",20210301,20210331,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fservices~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataServices[WD__month]));"]
+			],
+			[ // 5: Interactions: Content
+				["1","1",WD__buildSourceURL("content-pages",20210301,20210331,"~2Fservices",-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20210301,20210331,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fstay-healthy~2F,analytics.pagePathLevel2:~2Fblog~2F/",-1)],
+				["3","1",WD__buildSourceURL("content-drilldown",20210301,20210331,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fdoctors~2F/",-1)],
+				["4","1",WD__buildSourceURL("content-drilldown",20210301,20210331,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Flocations~2F/",-1)],
+				["5","1",WD__buildSourceURL("content-drilldown",20210301,20210331,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fstay-healthy~2F,analytics.pagePathLevel2:~2Fclass~2F/",-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataInteractions[WD__month]));"]
+			],
+			[ // 6: Interactions: Transactions
+				["1","1",WD__buildSourceURL("sitePayments","2021-03-01","2021-04-01",-1,-1)],
+				["2","1",WD__buildSourceURL("content-drilldown",20210301,20210331,"%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Fsearch~2F/",-1)],
+				["3","0","javascript:alert('Online appointments come from Epic reports.');"],
+				["4","1",WD__buildSourceURL("siteClasses","2021-03-01","2021-04-01",-1,-1)],
+				["5","1",WD__buildSourceURL("sitePeople","2021-03-01","2021-04-01",-1,-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataInteractionsTx[WD__month]));"]
+			],
+			[ // 7: Google Search Terms
+				["1","1",WD__buildSourceURL("gsc",20210301,20210331,-1,-1)],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataTerms[WD__month]));"]
+			],
+			[ // 8: Device Categories
+				["1","1",WD__buildSourceURL("gaMisc",20210301,20210331,"visitors-mobile-overview","/")],
+				["2","1",WD__buildSourceURL("gaMisc",20210301,20210331,"visitors-mobile-overview","analytics.fullReferrer&explorer-table.plotKeys=%5B%5D&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataDevicesGen[WD__month]));"]
+			],
+			[ // 9: Sources
+				["1","1",WD__buildSourceURL("gaMisc",20210301,20210331,"trafficsources-all-traffic","/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataSources[WD__month]));"]
+			],
+			[ // 10: States
+				["1","1","https://analytics.google.com/analytics/web/#/report/visitors-geo/a6177134w11927398p107813501/_u.date00=20210301&_u.date01=20210331&geo-table.plotKeys=%5B%5D&_r.drilldown=analytics.country:US,analytics.region:21137/"],
+				["2","1","https://analytics.google.com/analytics/web/#/report/visitors-geo/a6177134w11927398p107813501/_u.date00=20210301&_u.date01=20210331&geo-table.plotKeys=%5B%5D&geo-table.secSegmentId=analytics.fullReferrer&geo-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D&_r.drilldown=analytics.country:US,analytics.region:21137/"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataStates[WD__month]));"]
+			],
+			[ // 11: Browsers
+				["1","1",WD__buildSourceURL("gaMisc",20210301,20210331,"visitors-browser","/")],
+				["2","1",WD__buildSourceURL("gaMisc",20210301,20210331,"visitors-browser","analytics.fullReferrer&explorer-table.plotKeys=%5B%5D&explorer-table.advFilter=%5B%5B0,%22analytics.fullReferrer%22,%22PT%22,%221.1.1.1%22,0%5D%5D/")],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataOperatingSystems[WD__month]));"]
+			],
+			[ // 12: Quality
+				["1","1",WD__buildSourceURL("Dci",-1,-1,-1,-1)],
+				["2","1",WD__buildSourceURL("QualityAssurance",-1,-1,-1,-1)],
+				["3","1",WD__buildSourceURL("Accessibility",-1,-1,-1,-1)],
+				["4","1",WD__buildSourceURL("SEOv2",-1,-1,-1,-1)],
+				["5","1","https://my2.siteimprove.com/Response/5773283912/5773293404/Custom/Details/Index?Status=All"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataOperatingSystems[WD__month]));"]
+			],
+			[ // 13: Locations
+				["1","1","https://analytics.google.com/analytics/web/#/report/content-drilldown/a6177134w11927398p107813501/_u.date00=20210301&_u.date01=20210331&explorer-table.plotKeys=%5B%5D&_r.drilldown=analytics.pagePathLevel1:~2Flocations~2F/"],
+				["Raw","0","javascript:alert(WD__readRaw(WD__dataCountries[WD__month]));"]
+			]
+		]
+	];
+
+	// Load Google Charts
+	google.charts.load('current', {'packages':['corechart']});
+
+	/*** Trend Chart ***/
+	function WD__chartTrend(WD__columns,WD__rows,WD__title,WD__div) {
+		var data = new google.visualization.DataTable();
+
+		data.addColumn('string', 'Months');
+		data.addColumn('number', 'FY21');
+		data.addColumn('number', 'FY20');
+		data.addColumn('number', 'FY19');
+		data.addColumn('number', 'FY18');
+
+		data.addRows(WD__rows);
+
+		var options = {
+			title: WD__title,
+			series: {
+				1: {curveType: 'function'}
+			}
+		};
+
+		var chart = new google.visualization.LineChart(document.getElementById(WD__div));
+		chart.draw(data, options);
+	}
+
+	/*** Vertical Bar Chart ***/
+	function WD__chartVertBar(WD__bars,WD__title,WD__div) {
+		var data = google.visualization.arrayToDataTable(WD__bars);
+
+		var view = new google.visualization.DataView(data);
+		view.setColumns([0, 1,
+		{ calc: "stringify",
+			sourceColumn: 1,
+			type: "string",
+			role: "annotation" },
+		2]);
+
+		var options = {
+			title: WD__title,
+			height: 400,
+			bar: {groupWidth: "95%"},
+			legend: { position: "none" },
+		};
+
+		var chart = new google.visualization.ColumnChart(document.getElementById(WD__div));
+		chart.draw(view, options);
+	}
+
+	/*** Donut Chart ***/
+	function WD__chartDonut(WD__data,WD__title,WD__div) {
+		var data = google.visualization.arrayToDataTable(WD__data);
+
+		var options = {
+			title: WD__title,
+			height: 400,
+			pieHole: 0.5
+		};
+
+		var chart = new google.visualization.PieChart(document.getElementById(WD__div));
+		chart.draw(data, options);
+	}
+
+	function formatNumber(num) {
+		// https://blog.abelotech.com/posts/number-currency-formatting-javascript/
+		return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
+	}
+
+	function WD__move(WD__direction){
+		WD__month = WD__month + WD__direction;
+		if (WD__month < 0){ WD__month = 0; }
+		if (WD__month > WD__monthMax){ WD__month = WD__monthMax; }
+		WD__chartsInit(WD__month);
+	}
+
+	function WD__getArrayRange(WD__array,WD__min,WD__max,WD__headerInclude){
+		var WD__arrayRange = new Array();
+		var WD__arrayRangeStart = 0;
+
+		if (WD__headerInclude == 1){ //include array row 0
+			WD__arrayRange[0] = WD__array[0];
+			WD__arrayRangeStart++;
+		}
+
+		for (i=WD__min,j=WD__arrayRangeStart;i<=WD__max;i++,j++){
+			WD__arrayRange[j] = WD__array[i];
+		}
+		return WD__arrayRange;
+	}
+
+	function WD__setRange(WD__type,WD__array,WD__min,WD__max,WD__headerInclude,WD__title,WD__div){
+
+		switch(WD__type) {
+		  case "chart":
+			google.charts.setOnLoadCallback(WD__chartVertBar(WD__getArrayRange(WD__array,WD__min,WD__max,WD__headerInclude),WD__title,WD__div));
+			break;
+		  case "donut":
+			//alert("donut");
+			break;
+		}
+
+	}
+
+	function WD__getSources(WD__array){
+		var WD__sourcesPrint = "Source(s): ";
+		for(i=0;i<WD__array.length;i++){
+			WD__sourcesPrint = WD__sourcesPrint + "<a href=\"" + WD__array[i][2] + "\"";
+				if (WD__array[i][1] == 1){ WD__sourcesPrint = WD__sourcesPrint + " target=\"new" + i + "\""; } // if open in new window
+			WD__sourcesPrint = WD__sourcesPrint + ">" + WD__array[i][0] + "</a>,";
+		}
+		WD__sourcesPrint = WD__sourcesPrint.substring(0,WD__sourcesPrint.length-1);
+
+		return WD__sourcesPrint;
+	}
+
+	function WD__readRaw(WD__array){
+		for(i=0;i<WD__array.length;i++){
+			//alert(eval(new String(WD__array[i][1])));
+			WD__array[i] = WD__array[i] + "\r\n";
+		}
+		return WD__array;
+	}
+
+	function WD__buildSourceURL(WD__type,WD__start,WD__end,WD__input,WD__path){
+		var WD__URL;
+
+		if (WD__type == "content-drilldown"){
+			WD__URL = "https://analytics.google.com/analytics/web/#/report/" + WD__type + "/a6177134w11927398p107813501/_u.date00=" + WD__start + "&_u.date01=" + WD__end + "&explorer-table.plotKeys=" + WD__input;
+		} else if (WD__type == "content-pages"){
+			WD__URL = "https://analytics.google.com/analytics/web/#/report/" + WD__type + "/a6177134w11927398p107813501/_u.date00=" + WD__start + "&_u.date01=" + WD__end + "&explorer-table.filter=" + WD__input + "&explorer-table.plotKeys=%5B%5D/";
+		} else if (WD__type == "gaMisc"){
+			WD__URL = "https://analytics.google.com/analytics/web/#/report/" + WD__input + "/a6177134w11927398p107813501/_u.date00=" + WD__start + "&_u.date01=" + WD__end + "&explorer-table.secSegmentId=" + WD__path;
+		} else if (WD__type == "gsc"){
+			WD__URL = "https://search.google.com/search-console/performance/search-analytics?resource_id=https%3A%2F%2Fwww.websitename.org%2F&start_date=" + WD__start + "&end_date=" + WD__end;
+		} else if (WD__type == "sitePayments"){
+			WD__URL = "https://www.websitename.org/admin/content/payment?ptid=&created%5Bmin%5D=" + WD__start + "&created%5Bmax%5D=" + WD__end + "&field_department_target_id=All&name=&field_full_name_value=&payment_method__plugin_id=1&card_type=All&last4=";
+		} else if (WD__type == "siteClasses"){
+			WD__URL = "https://www.websitename.org/admin/classes/participants?title=&field_first_name_value=&field_last_name_value=&uid=&mail=&field_phone_value=&combine=&field_address_postal_code=&created%5Bmin%5D=" + WD__start + "&created%5Bmax%5D=" + WD__end + "&items_per_page=100";
+		} else if (WD__type == "sitePeople"){
+			WD__URL = "https://www.websitename.org/admin/people?status=All&role=All&imported=All&created[min]=" + WD__start + "&created[max]=" + WD__end + "&mycare_linked=All&items_per_page=500";
+		} else if ((WD__type == "Dci")||(WD__type == "QualityAssurance")||(WD__type == "Accessibility")||(WD__type == "SEOv2")){
+			WD__URL = "https://my2.siteimprove.com/" + WD__type + "/895622/Overview/Index";
+		}
+
+		return WD__URL;
+	}
+
+	function WD__trafficTotals(){
+		/*** Pageviews ***/
+			// Previous year pageviews
+			WD__totalPVp = 0;
+			for(i=0;i<12;i++){
+				WD__totalPVp = WD__totalPVp + WD__dataPageviews[i][2];
+			}
+
+			// Current year pageviews (actual)
+			WD__totalPVca = 0;
+			for(i=0;i<=WD__month;i++){
+				WD__totalPVca = WD__totalPVca + WD__dataPageviews[i][1];
+			}
+
+			// Current year pageviews (projected)
+			WD__totalPVcp = (WD__totalPVca/(WD__month+1))*12;
+
+		/*** Uniques ***/
+			// Previous year uniques
+			WD__totalUVp = 0;
+			for(i=0;i<12;i++){
+				WD__totalUVp = WD__totalUVp + WD__dataUniques[i][2];
+			}
+
+			// Current year uniques (actual)
+			WD__totalUVca = 0;
+			for(i=0;i<=WD__month;i++){
+				WD__totalUVca = WD__totalUVca + WD__dataUniques[i][1];
+			}
+
+			// Current year uniques (projected)
+			WD__totalUVcp = (WD__totalUVca/(WD__month+1))*12;
+	}
+
+	function WD__chartsInit(WD__month){
+		WD__monthPrev = WD__month-1;
+		var WD__monthYear = WD__yearStart;
+		//if (WD__month < 6){ WD__monthYear = WD__yearStart; } else { WD__monthYear = WD__yearStart+1;} // use if FY is not aligned with calendar
+
+		// Prev month data
+		if (WD__monthPrev != -1){ // if it goes into last FY, fill in N/A
+			WD__monthPrevMonthPV = "<br><b>Last month:</b> " + formatNumber(WD__dataPageviews[WD__monthPrev][1]) + " <i>(" + parseFloat((WD__dataPageviews[WD__month][1]-WD__dataPageviews[WD__monthPrev][1])/WD__dataPageviews[WD__monthPrev][1]*100).toFixed(2)+"%" + ")</i>";
+			WD__monthPrevMonthUV = "<br><b>Last month:</b> " + formatNumber(WD__dataUniques[WD__monthPrev][1]) + " <i>(" + parseFloat((WD__dataUniques[WD__month][1]-WD__dataUniques[WD__monthPrev][1])/WD__dataUniques[WD__monthPrev][1]*100).toFixed(2)+"%" + ")</i>";
+			WD__monthPrevYearPV = " <i>(" + parseFloat((WD__dataPageviews[WD__month][1]-WD__dataPageviews[WD__month][2])/WD__dataPageviews[WD__month][2]*100).toFixed(2)+"%" + ")</i>";
+			WD__monthPrevYearUV = " <i>(" + parseFloat((WD__dataUniques[WD__month][1]-WD__dataUniques[WD__month][2])/WD__dataUniques[WD__month][2]*100).toFixed(2)+"%" + ")</i>";
+		} else {
+			WD__monthPrevMonthPV = "";
+			WD__monthPrevMonthUV = "";
+			WD__monthPrevYearPV = "";
+			WD__monthPrevYearUV = "";
+		}
+
+		// Traffic Summary
+		document.getElementById("WD__divTitleMonth").innerHTML = WD__dataPageviews[WD__month][0] + " " + WD__monthYear;
+		document.getElementById("WD__divTrafficSummaryPageviews0").innerHTML = "<b>This month:</b> " + formatNumber(WD__dataPageviews[WD__month][1]) + WD__monthPrevMonthPV + "<br><b>This month (last year):</b> " + formatNumber(WD__dataPageviews[WD__month][2]) + " <i>(" + parseFloat((WD__dataPageviews[WD__month][1]-WD__dataPageviews[WD__month][2])/WD__dataPageviews[WD__month][2]*100).toFixed(2)+"%" + ")</i>";
+		document.getElementById("WD__divTrafficSummaryUniques0").innerHTML = "<b>This month:</b> " + formatNumber(WD__dataUniques[WD__month][1]) + WD__monthPrevMonthUV  + "<br><b>This month (last year):</b> " + formatNumber(WD__dataUniques[WD__month][2]) + " <i>(" + parseFloat((WD__dataUniques[WD__month][1]-WD__dataUniques[WD__month][2])/WD__dataUniques[WD__month][2]*100).toFixed(2)+"%" + ")</i>";
+		document.getElementById("WD__divTrafficSummaryTotals0").innerHTML = "<b>FY21-to-date:</b> " + formatNumber(WD__totalPVca) + "<br><b>FY21 Projected:</b> " + formatNumber(WD__totalPVcp) + "<br><b>FY20 Actual:</b> " + formatNumber(WD__totalPVp);
+		document.getElementById("WD__divTrafficSummaryTotals-1").innerHTML = "<b>FY21-to-date:</b> " + formatNumber(WD__totalUVca) + "<br><b>FY21 Projected:</b> " + formatNumber(WD__totalUVcp) + "<br><b>FY20 Actual:</b> " + formatNumber(WD__totalUVp);
+
+		// Charts
+		google.charts.setOnLoadCallback(WD__chartTrend(WD__chartLabels,WD__dataPageviews,'Aggregate Pageviews','WD__divPageviews'));
+		google.charts.setOnLoadCallback(WD__chartTrend(WD__chartLabels,WD__dataUniques,'Aggregate Uniques','WD__divUniques'));
+		google.charts.setOnLoadCallback(WD__chartVertBar(WD__getArrayRange(WD__dataURLsUnique[WD__month],0,5,0),'Top 5 Unique URLs (Uniques)','WD__divURLsUnique'));
+		google.charts.setOnLoadCallback(WD__chartVertBar(WD__getArrayRange(WD__dataSiteAreas[WD__month],0,5,0),'Top 5 Site Areas (Uniques)','WD__divSiteAreas'));
+		google.charts.setOnLoadCallback(WD__chartVertBar(WD__getArrayRange(WD__dataServices[WD__month],0,7,0),'Products & Services (Uniques)','WD__divServices'));
+		google.charts.setOnLoadCallback(WD__chartVertBar(WD__getArrayRange(WD__dataTerms[WD__month],0,5,0),'Top 5 Google Search Terms (Clicks)','WD__divTerms'));
+		google.charts.setOnLoadCallback(WD__chartVertBar(WD__getArrayRange(WD__dataInteractions[WD__month],0,5,0),'Key Interactions: Blog Content (Uniques)','WD__divInteractions'));
+		google.charts.setOnLoadCallback(WD__chartDonut(WD__getArrayRange(WD__dataDevicesGen[WD__month],0,3,0),'Device Categories (Users)','WD__divDevicesGen'));
+		google.charts.setOnLoadCallback(WD__chartVertBar(WD__getArrayRange(WD__dataSources[WD__month],0,5,0),'Top 5 Sources (Users)','WD__divSources'));
+		google.charts.setOnLoadCallback(WD__chartVertBar(WD__getArrayRange(WD__dataCountries[WD__month],0,5,0),'Top 5 Countries (Users)','WD__divCountries'));
+		google.charts.setOnLoadCallback(WD__chartVertBar(WD__getArrayRange(WD__dataStates[WD__month],0,5,0),'Top 5 States (Users)','WD__divStates'));
+		google.charts.setOnLoadCallback(WD__chartVertBar(WD__getArrayRange(WD__dataCities[WD__month],0,5,0),'Top 5 Cities (Users)','WD__divCities'));
+		google.charts.setOnLoadCallback(WD__chartVertBar(WD__getArrayRange(WD__dataInteractionsTx[WD__month],0,2,0),'Key Interactions: Transactional','WD__divInteractionsTx'));
+		google.charts.setOnLoadCallback(WD__chartVertBar(WD__getArrayRange(WD__dataOperatingSystems[WD__month],0,5,0),'Top 5 Operating Systems (Users)','WD__divOperatingSystems'));
+		//google.charts.setOnLoadCallback(WD__chartVertBar(WD__getArrayRange(WD__dataQuality[WD__month],0,5,0),'Quality & Health','WD__divQuality'));
+
+		// Observations
+		var WD__tableObservationsRef = "WD__tableObservations";
+		var WD__tableObservationsLength = document.getElementById(WD__tableObservationsRef).rows.length;
+
+		for(i=WD__tableObservationsLength-1; i>0; i--){ // Remove observations
+			document.getElementById(WD__tableObservationsRef).deleteRow(i);
+		}
+
+		for(i=0;i<WD__dataObservations[WD__month].length;i++){ // Add observations
+			var WD__row = document.getElementById(WD__tableObservationsRef).insertRow(-1);
+			var WD__cell = WD__row.insertCell(0);
+			WD__cell.innerHTML = WD__dataObservations[WD__month][i];
+		}
+
+		// Sources
+		/*document.getElementById("WD__divPageviewsFootnote").innerHTML = WD__getSources(WD__dataDataSources[WD__month][0]);
+		document.getElementById("WD__divUniquesFootnote").innerHTML = WD__getSources(WD__dataDataSources[WD__month][1]);
+		document.getElementById("WD__divURLsUniqueFootnote").innerHTML = WD__getSources(WD__dataDataSources[WD__month][2]);
+		document.getElementById("WD__divSiteAreasFootnote").innerHTML = WD__getSources(WD__dataDataSources[WD__month][3]);
+		document.getElementById("WD__divServicesFootnote").innerHTML = WD__getSources(WD__dataDataSources[WD__month][4]);
+		document.getElementById("WD__divInteractionsFootnote").innerHTML = WD__getSources(WD__dataDataSources[WD__month][5]);
+		//document.getElementById("WD__divInteractionsTxFootnote").innerHTML = WD__getSources(WD__dataDataSources[WD__month][6]);
+		document.getElementById("WD__divTermsFootnote").innerHTML = WD__getSources(WD__dataDataSources[WD__month][7]);
+		document.getElementById("WD__divDevicesGenFootnote").innerHTML = WD__getSources(WD__dataDataSources[WD__month][8]);
+		document.getElementById("WD__divSourcesFootnote").innerHTML = WD__getSources(WD__dataDataSources[WD__month][9]);
+		document.getElementById("WD__divStatesFootnote").innerHTML = WD__getSources(WD__dataDataSources[WD__month][10]);
+		//document.getElementById("WD__divQualityFootnote").innerHTML = WD__getSources(WD__dataDataSources[WD__month][12]);
+		//document.getElementById("WD__divOperatingSystemsFootnote").innerHTML = WD__getSources(WD__dataDataSources[WD__month][11]);
+		document.getElementById("WD__divCountriesFootnote").innerHTML = WD__getSources(WD__dataDataSources[WD__month][13]);*/
+	}
+    </script>
+	<style>
+
+	/* Baseline */
+		body{
+			margin: 0px;
+		}
+
+		table {
+			font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+			border-collapse: collapse;
+			width: 100%;
+		}
+
+		th, td {
+			border: 1px solid #ccc;
+			padding: 12px;
+			text-align: left;
+			font-size: 16px;
+		}
+
+	/* Table: Generic */
+		.WDtableGeneric th{
+			background-color: #3944BC;
+			font-weight: bold;
+			color: white;
+		}
+
+		.WDtableGeneric tr:nth-child(odd) {
+			background-color: #f2f2f2;
+		}
+
+		.WDtableGeneric tr:hover {
+			background-color: #ddd;
+		}
+
+		.WDtableGeneric td{
+			width: 50%;
+		}
+
+		.WDtableGeneric td:FIRST-CHILD{
+			font-weight:bold;
+		}
+
+	/* Table: Title */
+		#WDtableTitle {
+			position: fixed;
+			z-index: 10;
+		}
+
+		#WDtableTitle th{
+			background-color: #3944BC;
+			font-size: 20px;
+			font-weight: bold;
+			color: white;
+		}
+
+		#WDtableTitle a, #WDtableTitle a:hover{
+			color: #ffffff;
+			text-decoration: none;
+		}
+
+	/* Table: Traffic */
+		#WDtableTrafficSummary {
+			margin-top: 40px;
+		}
+
+		#WDtableTrafficSummary th{
+			background-color: #4CAF50;
+			font-weight: bold;
+			color: white;
+		}
+
+		#WDtableTrafficSummary td{
+			background-color: #ebf1de;
+		}
+
+		#WDtableTrafficSummary td:hover {
+			background-color: #ddd;
+		}
+
+	/* Table: Charts */
+		#WDtableChartsLine td{
+			width: 50%;
+			align-content: center;
+		}
+
+		#WDtableCharts td{
+			width: 33.3%;
+			text-align: center;
+		}
+
+		#WDtableChartsLine td:hover {
+			background-color: #ddd;
+		}
+
+		#WDtableCharts td:hover {
+			background-color: #ddd;
+		}
+
+
+	/* Table: Smaller */
+		#WDtableSmaller td{
+			padding: 8px;
+			font-size: 12px;
+		}
+
+		#WDtableSmaller th{
+			background-color: #3944BC;
+			font-weight: bold;
+			color: white;
+		}
+
+		#WDtableSmaller tr:nth-child(odd) {
+			background-color: #f2f2f2;
+		}
+
+		#WDtableSmaller tr:hover {
+			background-color: #ddd;
+		}
+
+		#WDtableSmaller td{
+			width: 50%;
+		}
+
+		#WDtableSmaller td:FIRST-CHILD{
+			font-weight:bold;
+		}
+
+	/* Misc */
+		.WDfootnote {
+			width: 100%;
+			text-align: right;
+			font-size: 8px;
+		}
+
+
+@media only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px)  {
+	body{
+		margin-right: 30px;
+	}
+
+	table, thead, tbody, th, td, tr {
+		display: block;
+		width: 100%;
+	}
+
+	#WDtableGeneric td{
+		width: 100%;
+	}
+
+	#WDtableTrafficSummary {
+		margin-top: 140px;
+	}
+
+	#WDtableChartsLine td{
+		width: 100%;
+	}
+
+	#WDtableCharts td{
+		width: 100%;
+	}
+
+	#WDtableSmaller td{
+		width: 100%;
+	}
+}
+
+	</style>
+	<title>Website Dashboard</title>
+  </head>
+<body>
+
+<!-- Title Table -->
+<table id="WDtableTitle">
+	<tr>
+		<th>Website Dashboard</th>
+		<th><a href="javascript:WD__move(-1);">&lt;</a> <span id="WD__divTitleMonth"></span> <a href="javascript:WD__move(1);">&gt;</a></th>
+		<th><a href="http://www.dummywebsite.com" target="website">dummywebsite.com</a></th>
+	</tr>
+</table>
+
+<!-- Traffic Summary -->
+<br><table id="WDtableTrafficSummary">
+	<tr>
+		<th>&nbsp;</th>
+		<th>Pageviews</th>
+		<th>Uniques</th>
+	</tr>
+	<tr>
+		<td style="background-color:#c4d79b; font-weight: bold;">Monthly</td>
+		<td><div id="WD__divTrafficSummaryPageviews0"></div></td>
+		<td><div id="WD__divTrafficSummaryUniques0"></div></td>
+	</tr>
+	<tr>
+		<td style="background-color:#c4d79b; font-weight: bold;">Totals</td>
+		<td><div id="WD__divTrafficSummaryTotals0"></div></td>
+		<td><div id="WD__divTrafficSummaryTotals-1"></div></td>
+	</tr>
+</table>
+
+<!-- Trend Charts -->
+<br><table id="WDtableChartsLine">
+	<tr>
+		<td><div id="WD__divPageviews"></div><br><div id="WD__divPageviewsFootnote" class="WDfootnote"></div></td>
+		<td><div id="WD__divUniques"></div><br><div id="WD__divUniquesFootnote" class="WDfootnote"></div></td>
+	</tr>
+</table>
+
+<!-- Top 5 Charts -->
+<br><table id="WDtableCharts">
+	<tr>
+		<td><div id="WD__divURLsUnique"></div><br><a href="javascript:WD__setRange('chart',WD__dataURLsUnique[WD__month],1,5,1,'Top 5 Unique URLs (Uniques)','WD__divURLsUnique');">Top 1-5</a> | <a href="javascript:WD__setRange('chart',WD__dataURLsUnique[WD__month],6,10,1,'Top 6-10 Unique URLs (Uniques)','WD__divURLsUnique');">Top 6-10</a><br><div id="WD__divURLsUniqueFootnote" class="WDfootnote"></div></td>
+		<td><div id="WD__divSiteAreas"></div><br><a href="javascript:WD__setRange('chart',WD__dataSiteAreas[WD__month],1,5,1,'Top 5 Site Areas (Uniques)','WD__divSiteAreas');">Top 1-5</a> | <a href="javascript:WD__setRange('chart',WD__dataSiteAreas[WD__month],6,10,1,'Top 6-10 Site Areas (Uniques)','WD__divSiteAreas');">Top 6-10</a><div id="WD__divSiteAreasFootnote" class="WDfootnote"></div></td>
+		<td><div id="WD__divServices"></div><!--<br><a href="javascript:WD__setRange('chart',WD__dataServices[WD__month],1,5,1,'Top 5 Products & Services (Uniques)','WD__divServices');">Top 1-5</a> | <a href="javascript:WD__setRange('chart',WD__dataServices[WD__month],6,10,1,'Top 6-10 Products & Services (Uniques)','WD__divServices');">Top 6-10</a><div id="WD__divServicesFootnote" class="WDfootnote"></div>--></td>
+	</tr>
+	<tr>
+		<td><div id="WD__divInteractions"></div><br><a href="javascript:WD__setRange('chart',WD__dataInteractions[WD__month],1,5,1,'Top 5 Blog Content (Uniques)','WD__divInteractions');">Top 1-5</a> | <a href="javascript:WD__setRange('chart',WD__dataInteractions[WD__month],6,10,1,'Top 6-10 Blog Content (Uniques)','WD__divInteractions');">Top 6-10</a><div id="WD__divInteractionsFootnote" class="WDfootnote"></div></td>
+		<td><div id="WD__divSources"></div><br><div id="WD__divSourcesFootnote" class="WDfootnote"></div><br><a href="javascript:WD__setRange('chart',WD__dataSources[WD__month],1,5,1,'Top 5 Sources (Users)','WD__divSources');">Top 1-5</a> | <a href="javascript:WD__setRange('chart',WD__dataSources[WD__month],6,10,1,'Top 6-10 Sources (Users)','WD__divSources');">Top 6-10</a><div id="WD__divServicesFootnote" class="WDfootnote"></td>
+		<td><div id="WD__divTerms"></div><br><a href="javascript:WD__setRange('chart',WD__dataTerms[WD__month],1,5,1,'Top 5 Google Search Terms (Clicks)','WD__divTerms');">Top 1-5</a> | <a href="javascript:WD__setRange('chart',WD__dataTerms[WD__month],6,10,1,'Top 6-10 Google Search Terms (Clicks)','WD__divTerms');">Top 6-10</a><div id="WD__divTermsFootnote" class="WDfootnote"></div></td>
+	</tr>
+	<tr>
+		<td><div id="WD__divCountries"></div><br><a href="javascript:WD__setRange('chart',WD__dataCountries[WD__month],1,5,1,'Top 5 Countries (Users)','WD__divCountries');">Top 1-5</a> | <a href="javascript:WD__setRange('chart',WD__dataCountries[WD__month],6,10,1,'Top 6-10 Countries (Users)','WD__divCountries');">Top 6-10</a><br><br><div id="WD__divCountriesFootnote" class="WDfootnote"></div></td>
+		<td><div id="WD__divStates"></div><br><br><div id="WD__divStatesFootnote" class="WDfootnote"></div></td>
+		<td><div id="WD__divCities"></div><br><br><div id="WD__divCitiesGenFootnote" class="WDfootnote"></div></td>
+	</tr>
+	<tr>
+		<td><div id="WD__divInteractionsTx"></div><!--<br><a href="javascript:WD__setRange('chart',WD__dataInteractions[WD__month],1,5,1,'Top 5 Blog Content (Uniques)','WD__divInteractions');">Top 1-5</a> | <a href="javascript:WD__setRange('chart',WD__dataInteractions[WD__month],6,10,1,'Top 6-10 Blog Content (Uniques)','WD__divInteractions');">Top 6-10</a><div id="WD__divInteractionsFootnote" class="WDfootnote"></div>--></td>
+		<td><div id="WD__divDevicesGen"></div><br><br><div id="WD__divDevicesGenFootnote" class="WDfootnote"></div></td>
+		<td><div id="WD__divOperatingSystems"></div><br><br><div id="WD__divOperatingSystemsFootnote" class="WDfootnote"></div></td>
+	</tr>
+</table>
+
+<!-- Additional KPIs -->
+<!--<br><table class="WDtableGeneric">
+	<tr>
+		<th colspan="2">Additional Core KPIs</th>
+	</tr>
+	<tr>
+		<td>Top Services (6-10)</td>
+		<td>service, service, service, service, service</td>
+	</tr>
+	<tr>
+		<td>Top Site Areas (6-10)</td>
+		<td>page, page, page, page, page</td>
+	</tr>
+	<tr>
+		<td>Avg. Time on Page and Bouncerate (Sitewide)</td>
+		<td>1m41s & 73.91%</td>
+	</tr>
+	<tr>
+		<td><div id="WD__divInteractionsTx"></div><br><div id="WD__divInteractionsTxFootnote" class="WDfootnote"></div></td>
+		<td><div id="WD__divQuality"></div><br><br><div id="WD__divQualityFootnote" class="WDfootnote"></div></td>
+	</tr>
+</table>-->
+
+<!-- Key Observations -->
+<br><table id="WD__tableObservations" class="WDtableGeneric">
+	<tr>
+		<th>Key Observations</th>
+	</tr>
+</table>
+
+<!-- General Key -->
+<br><table id="WDtableSmaller">
+	<tr>
+		<th colspan="2">General Key of Descriptions and Clarifications</th>
+	</tr>
+	<tr>
+		<td>(values in parenthesis)</td>
+		<td>Benchmark value.</td>
+	</tr>
+	<tr>
+		<td>FY % Δ and Month % Δ</td>
+		<td>Percentage change compared to the same period in the last fiscal year or previous month.</td>
+	</tr>
+	<tr>
+		<td>Google Search Terms</td>
+		<td>Measured in clicks, terms people used on Google that led to the website.</td>
+	</tr>
+	<tr>
+		<td>Interactions: Content</td>
+		<td>Key content areas engaged with at the page level (not search/browse pages).</td>
+	</tr>
+	<tr>
+		<td>Interactions: Transactional</td>
+		<td>Key action-oriented activities occuring through the website.</td>
+	</tr>
+	<tr>
+		<td>MP</td>
+		<td>Main page of a section, excluding subpages (as reported in Analytics).</td>
+	</tr>
+	<tr>
+		<td>Net Revenue Flow ($)</td>
+		<td>The revenue that flows through the website.</td>
+	</tr>
+	<tr>
+		<td>Pageviews vs. Uniques</td>
+		<td>How many times a page was accessed vs. approximate number of people who accessed it.</td>
+	</tr>
+	<tr>
+		<td>Site Areas</td>
+		<td>Content areas that users interact with the most.</td>
+	</tr>
+	<tr>
+		<td>Source</td>
+		<td>The origin of traffic, as defined by UTM parameters; when undefined, referrer is the source.</td>
+	</tr>
+	<tr>
+		<td>SPs</td>
+		<td>Subpages of a section, excluding the main page (as reported in Analytics).</td>
+	</tr>
+	<tr>
+		<td>Unique URLs</td>
+		<td>The top URLs ranked by their distinctness. Even if URLs are similar they are counted separately.</td>
+	</tr>
+	<tr>
+		<td>Uptime</td>
+		<td>The percentage of time that a website is available to the users over a given period.</td>
+	</tr>
+	<tr>
+		<td colspan="2"><i><u>Note 1:</u> This document measures the general health of website engagement on www.dummydata.com and dummydata.com. Although it is robust, it does not cover all digital activities and is designed to provide points for further discussion or discovery; e.g., additional reporting for any in-depth questions.</i></td>
+	</tr>
+</table>
+
+</body>
+</html>
